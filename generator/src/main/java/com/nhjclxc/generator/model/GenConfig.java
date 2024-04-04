@@ -23,12 +23,20 @@ public class GenConfig
     /** 是否开启swagger注解 */
     public static Boolean enableSwagger;
 
+    public static Boolean getEnableSwagger() {
+        return enableSwagger;
+    }
+
+    public static void setEnableSwagger(Boolean enableSwagger) {
+        GenConfig.enableSwagger = enableSwagger;
+    }
+
     public static String getAuthor()
     {
         return author;
     }
 
-    public void setAuthor(String author)
+    public static void setAuthor(String author)
     {
         GenConfig.author = author;
     }
@@ -38,7 +46,7 @@ public class GenConfig
         return packageName;
     }
 
-    public void setPackageName(String packageName)
+    public static void setPackageName(String packageName)
     {
         GenConfig.packageName = packageName;
     }
@@ -48,7 +56,7 @@ public class GenConfig
         return autoRemovePre;
     }
 
-    public void setAutoRemovePre(boolean autoRemovePre)
+    public static void setAutoRemovePre(boolean autoRemovePre)
     {
         GenConfig.autoRemovePre = autoRemovePre;
     }
@@ -58,7 +66,7 @@ public class GenConfig
         return tablePrefix;
     }
 
-    public void setTablePrefix(String tablePrefix)
+    public static void setTablePrefix(String tablePrefix)
     {
         GenConfig.tablePrefix = tablePrefix;
     }

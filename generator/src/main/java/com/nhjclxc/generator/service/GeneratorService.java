@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -40,12 +39,16 @@ public class GeneratorService {
 	private Statement stmt = null;
 
 	/** 连接数据库 */
-	public void connect(JDBCObject jdbcObject) throws SQLException {
+	public void connect(JDBCObject jdbcObject) {
 		if (this.conn != null){
 			return;
 		}
-		this.conn = DriverManager.getConnection(jdbcObject.getJdbcUrl(), jdbcObject.getUsername(), jdbcObject.getPassword());
-		this.stmt = conn.createStatement();
+		try {
+			this.conn = DriverManager.getConnection(jdbcObject.getJdbcUrl(), jdbcObject.getUsername(), jdbcObject.getPassword());
+			this.stmt = conn.createStatement();
+		} catch (SQLException e) {
+			throw new RuntimeException("数据库连接异常：" + e.getMessage());
+		}
 	}
 
 	/** 执行sql */
@@ -58,24 +61,25 @@ public class GeneratorService {
 		return this.stmt.executeQuery(sql);
 	}
 
+	/** 更新配置 */
+	public static void flushGenConfig(GeneratorCodeDTO dto){
+		GenConfig.setAuthor(dto.getAuthor());
+		GenConfig.setPackageName(dto.getPackageName());
+		GenConfig.setAutoRemovePre(dto.getAutoRemovePre());
+		GenConfig.setTablePrefix(dto.getTablePrefix());
+		GenConfig.setEnableSwagger(dto.getEnableSwagger());
+	}
 
-	public PageInfo<GenTable> parse(JDBCObject jdbcObject, GenTable genTable, Integer pageNum, Integer pageSize) throws SQLException {
+	public PageInfo<GenTable> parse(JDBCObject jdbcObject, GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
 
 		// 连接数据库
 		connect(jdbcObject);
 
-		// 查询表信息
-		String dbTableListSQL = getDBTableListSQL(genTable.getTableName(), genTable.getTableComment());
-		ResultSet rs = executeSql(dbTableListSQL);
+		// 刷新代码生成配置
+		flushGenConfig(dto);
 
-		// 处理结果集
-		List<GenTable> tableList = new ArrayList<>();
-		while (rs.next()) {
-			tableList.add(GenTable.builder().tableName(rs.getString("table_name")).tableComment(rs.getString("table_comment"))
-					.createTime(parseLocalDateTime(rs.getString("create_time"), YYYY_MM_DD_HH_MM_SS_LINE))
-					.updateTime(parseLocalDateTime(rs.getString("update_time"), YYYY_MM_DD_HH_MM_SS_LINE))
-					.build());
-		}
+		// 查询表信息
+		List<GenTable> tableList = genTableList(dto.getTableName(), dto.getTableComment(), false, false);
 
 		// 对已有数据进行分页
 		pageNum = Optional.ofNullable(pageNum).orElse(1);
@@ -83,88 +87,135 @@ public class GeneratorService {
 		return getPageInfoByDataList(pageNum, pageSize, tableList);
 	}
 
-	private static String getDBTableListSQL(String tableName, String tableComment){
-		StringBuilder sql = new StringBuilder("\t\tselect table_name, table_comment, create_time, update_time from information_schema.tables\n" +
-				"\t\twhere table_schema = (select database())\n" +
-				"\t\tAND table_name NOT LIKE 'qrtz_%' AND table_name NOT LIKE 'gen_%'\n" +
-				"\t\tAND table_name NOT IN (select table_name from gen_table)\n");
-
-		if (StringUtils.isNotBlank(tableName)){
-			sql.append("\t\t\tAND lower(table_name) like lower(concat('%").append(tableName).append("%'))\n");
-		}
-		if (StringUtils.isNotBlank(tableComment)){
-			sql.append("\t\t\tAND lower(table_comment) like lower(concat('%").append(tableComment).append("%'))\n");
-		}
-		sql.append("        order by create_time desc");
-
-		return sql.toString();
-	}
-	private static String getDBTableListSQL4Output(String tableNames){
-		/*
- 		select table_name, table_comment, create_time, update_time from information_schema.tables
- 		where  table_schema = (select database())
- 		and table_name in
-	    <foreach collection="array" item="name" open="(" separator="," close=")">
- 			#{name}
-        </foreach>
-		 */
-		return " \t\tselect table_name, table_comment, create_time, update_time from information_schema.tables\n" +
-				" \t\twhere  table_schema = (select database())\n" +
-				" \t\tand table_name in " + tableNames;
-	}
+	/**
+	 * 获取列数据
+	 */
 	private static String getDBTableColumnsByName(String tableNames){
 		return "select table_name, column_name, ordinal_position as sort, column_comment, column_type, " +
 				"(case when (is_nullable = 'no' && column_key != 'PRI') then '1' else '0' end) as is_required, " +
 				"(case when column_key = 'PRI' then '1' else '0' end) as is_pk, " +
 				"(case when extra = 'auto_increment' then '1' else '0' end) as is_increment\n" +
-		"\t\tfrom information_schema.columns where table_schema = (select database()) and table_name in " + tableNames + "\n" +
+		"\t\tfrom information_schema.columns where table_schema = (select database()) and table_name in ( " + tableNames + " ) \n" +
 		"\t\torder by ordinal_position";
 	}
 
-	public byte[] genCode(GeneratorCodeDTO dto) throws SQLException {
+	/**
+	 * 获取表结构
+	 */
+	public List<GenTable> genTableList(String tables, String tableComment, boolean isExport, boolean equal) throws SQLException {
 
-		GenConfig.author = dto.getAuthor();
-		GenConfig.packageName = dto.getPackageName();
-		GenConfig.autoRemovePre= dto.getAutoRemovePre();
-		GenConfig.tablePrefix = dto.getTablePrefix();
-		GenConfig.enableSwagger = dto.getEnableSwagger();
-
-		String tables = dto.getTables();
-		if (tables == null || "".equals(tables)){
-			throw new RuntimeException("未选择表，无法导出");
-		}
-		String[] tableNames = tables.split(",");
-		if (tableNames.length <= 0){
+		log.info("tables: {}", tables);
+		if (isExport && (tables == null || "".equals(tables))){
 			throw new RuntimeException("未选择表，无法导出");
 		}
 
-		StringJoiner stringJoiner = new StringJoiner(", ", "(", ")");
+		// 查询表信息 sql
+		/*
+		select table_name, table_comment from information_schema.tables
+		where  table_schema = (select database())
+			and ( lower(table_name) like lower(concat('%','gen','%'))
+			 		or lower(table_name) like lower(concat('%','dict','%'))
+			 		or lower(table_comment) like lower(concat('%','任务','%'))
+			 	)
+		 */
+		StringBuilder selectTableInfoSQL = new StringBuilder("select table_name, table_comment from information_schema.tables\n" +
+				"\t\twhere  table_schema = (select database())");
+		boolean hasTableNmaeFlag = (tables != null && !"".equals(tables));
+		boolean hasTableCommentFlag = (tableComment != null && !"".equals(tableComment));
+		if (hasTableNmaeFlag || hasTableCommentFlag){
+			selectTableInfoSQL.append(" and ");
 
-		for (String tableName : tableNames) {
-			stringJoiner.add("'" + tableName + "'");
+			if (hasTableNmaeFlag){
+				if (equal){
+					selectTableInfoSQL.append(" lower(table_name) = lower('").append(tables).append("')");
+				}else {
+					String[] tableNames = tables.split(",");
+					if (isExport && tableNames.length <= 0){
+						throw new RuntimeException("未选择表，无法导出");
+					}
+					StringJoiner stringJoiner = new StringJoiner(" or ", "", "");
+					for (String tableName : tableNames) {
+						if (isExport){
+							stringJoiner.add(" table_name = '" + tableName +"'");
+						}else {
+							stringJoiner.add(" lower(table_name) like concat('%',lower('" + tableName +"'),'%')");
+						}
+					}
+					selectTableInfoSQL.append(stringJoiner);
+				}
+			}
+
+			if (hasTableNmaeFlag && hasTableCommentFlag) {
+				selectTableInfoSQL.append(" and ");
+			}
+
+			if (hasTableCommentFlag) {
+				selectTableInfoSQL.append(" lower(table_comment) like concat('%', lower('").append(tableComment).append("'),'%') ");
+			}
+
 		}
 
-
-		// 第一步：生成表结构
-
-		// 查询表信息
-		String dbTableListSQL4Output = getDBTableListSQL4Output(stringJoiner.toString());
-//		ResultSet tablesRes = this.stmt.executeQuery(dbTableListSQL4Output);
-		ResultSet tablesRes = executeSql(dbTableListSQL4Output);
+		ResultSet tablesRes = executeSql(selectTableInfoSQL.toString());
 
 		// 处理结果集
 		List<GenTable> tableList = new ArrayList<>();
 		while (tablesRes.next()) {
-			tableList.add(GenTable.builder().tableName(tablesRes.getString("table_name")).tableComment(tablesRes.getString("table_comment"))
-					.createTime(parseLocalDateTime(tablesRes.getString("create_time"), YYYY_MM_DD_HH_MM_SS_LINE))
-					.updateTime(parseLocalDateTime(tablesRes.getString("update_time"), YYYY_MM_DD_HH_MM_SS_LINE))
-					.tplCategory(GenConstants.TPL_CRUD).build());
+			String tableName = tablesRes.getString("table_name");
+			GenTable table = GenTable.builder().tableName(tableName).className(GenUtils.convertClassName(tableName))
+					.tableComment(tablesRes.getString("table_comment"))
+					.tplCategory(GenConstants.TPL_CRUD).build();
+			GenUtils.initTable(table, GenConfig.author);
+			tableList.add(table);
 		}
-//		List<String> tableNameList = tableList.stream().map(GenTable::getTableName).filter(Objects::nonNull).collect(Collectors.toList());
+		return tableList;
+	}
 
-		String dbTableColumnsByNameSQL = getDBTableColumnsByName(stringJoiner.toString());
-//		ResultSet columnsRes = this.stmt.executeQuery(dbTableColumnsByNameSQL);
+	/**
+	 * 生成代码
+	 */
+	public byte[] genCode(GeneratorCodeDTO dto) throws SQLException {
 
+		flushGenConfig(dto);
+
+		// 第一步：生成表结构
+		List<GenTable> tableList = genTableList(dto.getTables(), null, true, false);
+
+		// 生成字段数据
+		StringJoiner stringJoiner = new StringJoiner(", ");
+		for (String tableName : dto.getTables().split(",")) {
+			stringJoiner.add("'" + tableName + "'");
+		}
+		List<GenTableColumn> genTableColumnsList = getColumnsList(stringJoiner.toString());
+		Map<String, List<GenTableColumn>> genTableColumnsMap = genTableColumnsList.stream().filter(e -> e.getTableName() != null).collect(Collectors.groupingBy(GenTableColumn::getTableName));
+
+		// 表数据与字段数据绑定
+		for (GenTable table : tableList) {
+			// 保存列信息
+			List<GenTableColumn> genTableColumns = genTableColumnsMap.get(table.getTableName());
+			List<GenTableColumn> columns = new ArrayList<>();
+			for (GenTableColumn column : genTableColumns) {
+				GenUtils.initColumnField(column, table);
+				columns.add(column);
+			}
+			table.setColumns(columns);
+		}
+
+		// 第三步：生成代码
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		ZipOutputStream zip = new ZipOutputStream(outputStream);
+		for (GenTable genTable : tableList) {
+			generatorCode(genTable, zip);
+		}
+		IOUtils.closeQuietly(zip);
+		return outputStream.toByteArray();
+	}
+
+	/** 获取指定表的列数据
+	 * 一张表 tableNames为 "'table1'"
+	 * 多张表 tableNames为 "'table1','table2','table3'"
+	 * */
+	private List<GenTableColumn> getColumnsList(String tableNames) throws SQLException {
+		String dbTableColumnsByNameSQL = getDBTableColumnsByName(tableNames);
 		ResultSet columnsRes = executeSql(dbTableColumnsByNameSQL);
 
 		List<GenTableColumn> genTableColumnsList = new ArrayList<>();
@@ -175,30 +226,7 @@ public class GeneratorService {
 					.isRequired(columnsRes.getString("is_required")).isPk(columnsRes.getString("is_pk"))
 					.isIncrement(columnsRes.getString("is_increment")).build());
 		}
-		Map<String, List<GenTableColumn>> genTableColumnsMap = genTableColumnsList.stream().filter(e -> e.getTableName() != null).collect(Collectors.groupingBy(GenTableColumn::getTableName));
-
-		for (GenTable table : tableList) {
-			String tableName = table.getTableName();
-			GenUtils.initTable(table, GenConfig.author);
-			// 保存列信息
-			List<GenTableColumn> genTableColumns = genTableColumnsMap.get(tableName);
-			List<GenTableColumn> columns = new ArrayList<>();
-			for (GenTableColumn column : genTableColumns) {
-				GenUtils.initColumnField(column, table);
-				columns.add(column);
-			}
-			table.setColumns(columns);
-		}
-
-		// 第二步：生成代码
-
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		ZipOutputStream zip = new ZipOutputStream(outputStream);
-		for (GenTable genTable : tableList) {
-			generatorCode(genTable, zip);
-		}
-		IOUtils.closeQuietly(zip);
-		return outputStream.toByteArray();
+		return genTableColumnsList;
 	}
 
 	/**
@@ -208,8 +236,6 @@ public class GeneratorService {
 		// 表信息
 		//GenTable table
 
-		// 设置主子表信息
-//		setSubTable(table);
 		// 设置主键列信息
 		setPkColumn(table);
 
@@ -238,19 +264,6 @@ public class GeneratorService {
 			{
 				log.error("渲染模板失败，表名：" + table.getTableName(), e);
 			}
-		}
-	}
-
-	/**
-	 * 设置主子表信息
-	 *
-	 * @param table 业务表信息
-	 */
-	public void setSubTable(GenTable table) {
-		String subTableName = table.getSubTableName();
-		if (StringUtils.isNotEmpty(subTableName))
-		{
-//			table.setSubTable(genTableMapper.selectGenTableByName(subTableName));
 		}
 	}
 
@@ -291,6 +304,39 @@ public class GeneratorService {
 
 
 	/**
+	 * 预览代码
+	 *
+	 * @return 预览数据列表
+	 */
+	public Map<String, String> previewCode(String tableName) throws SQLException {
+		Map<String, String> dataMap = new LinkedHashMap<>();
+		// 查询表信息
+		List<GenTable> tableList = genTableList(tableName, null, false, true);
+		GenTable table = tableList.get(0);
+		// 获取列信息
+		List<GenTableColumn> columns = getColumnsList("'" + tableName + "'");
+		table.setColumns(columns);
+
+		// 设置主键列信息
+		setPkColumn(table);
+		VelocityInitializer.initVelocity();
+
+		VelocityContext context = VelocityUtils.prepareContext(table);
+
+		// 获取模板列表
+		List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), table.getTplWebType());
+		for (String template : templates)
+		{
+			// 渲染模板
+			StringWriter sw = new StringWriter();
+			Template tpl = Velocity.getTemplate(template, Constants.UTF8);
+			tpl.merge(context, sw);
+			dataMap.put(template, sw.toString());
+		}
+		return dataMap;
+	}
+
+	/**
 	 * 手动分页
 	 *
 	 * @param pageNum 页码，默认0
@@ -328,16 +374,6 @@ public class GeneratorService {
 		pageInfo.setHasPreviousPage(pageNum > 1);
 		pageInfo.setHasNextPage(pageNum < pages);
 		return pageInfo;
-	}
-
-
-	public static final String YYYY_MM_DD_HH_MM_SS_LINE = "yyyy-MM-dd HH:mm:ss";
-
-	public static LocalDateTime parseLocalDateTime(String localDateTime, String pattern) {
-		try {
-			return LocalDateTime.parse(localDateTime, DateTimeFormatter.ofPattern(pattern));
-		}catch (Exception ignored){ }
-		return null;
 	}
 
     /*

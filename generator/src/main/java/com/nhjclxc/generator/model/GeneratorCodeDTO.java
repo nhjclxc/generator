@@ -1,6 +1,5 @@
 package com.nhjclxc.generator.model;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +31,11 @@ public class GeneratorCodeDTO implements Serializable {
     private Boolean autoRemovePre = false;
     /** 表前缀（生成类名不会包含表前缀，多个用逗号分隔） */
     private String tablePrefix = "";
+
+    /** 表名称 */
+    private String tableName;
+
+    /** 表描述 */
+    private String tableComment;
 
 }

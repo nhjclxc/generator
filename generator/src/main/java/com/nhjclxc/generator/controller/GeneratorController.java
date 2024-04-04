@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * 代码生成控制器
@@ -37,8 +38,8 @@ public class GeneratorController {
     @ApiOperation(value = "连接到数据库")
     @ApiResponse(code = 200, message = "success")
     @GetMapping("/parse")
-    public JsonResult<PageInfo<GenTable>> parse(JDBCObject jdbcObject, GenTable genTable, Integer pageNum, Integer pageSize) throws SQLException {
-        return JsonResult.success(generatorService.parse(jdbcObject, genTable, pageNum, pageSize));
+    public JsonResult<PageInfo<GenTable>> parse(JDBCObject jdbcObject, GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
+        return JsonResult.success(generatorService.parse(jdbcObject, dto, pageNum, pageSize));
     }
 
     /**
@@ -52,6 +53,15 @@ public class GeneratorController {
 
 
     /**
+     * 预览代码
+     */
+    @GetMapping("/preview/{tableName}")
+    public JsonResult<Map<String, String>> preview(@PathVariable("tableName") String tableName) throws IOException, SQLException {
+        Map<String, String> dataMap = generatorService.previewCode(tableName);
+        return JsonResult.success(dataMap);
+    }
+
+    /**
      * 生成zip文件
      */
     private void write(HttpServletResponse response, byte[] data, String tables) throws IOException
@@ -59,7 +69,7 @@ public class GeneratorController {
         response.reset();
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + tables + "-Code-" + System.currentTimeMillis() + ".zip\"");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + tables + "-" + System.currentTimeMillis() + ".zip\"");
         response.addHeader("Content-Length", "" + data.length);
         response.setContentType("application/octet-stream; charset=UTF-8");
         IOUtils.write(data, response.getOutputStream());
