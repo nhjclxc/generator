@@ -1,0 +1,119 @@
+package ${packageName}.controller;
+
+import java.util.List;
+import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ${packageName}.domain.${ClassName};
+import ${packageName}.service.I${ClassName}Service;
+
+#if(${enableSwagger})
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+#end
+
+/**
+ * ${functionName}Controller
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+@RestController
+@RequestMapping("/${moduleName}/${businessName}")
+#if(${enableSwagger})
+@Api(tags = "${functionName}管理", description = "")
+#end
+public class ${ClassName}Controller extends BaseController
+{
+    @Autowired
+    private I${ClassName}Service ${className}Service;
+
+    /**
+     * 查询${functionName}列表
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "查询${functionName}列表")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @GetMapping("/list")
+    public JsonResult<PageInfo<${ClassName}>> list(${ClassName} ${className}, Integer pageNum, Integer pageSize)
+    {
+        PageInfo<${ClassName}> pageInfo = ${className}Service.select${ClassName}List(${className}, pageNum, pageSize);
+        return JsonResult.success(pageInfo);
+    }
+
+    /**
+     * 导出${functionName}列表
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "导出${functionName}列表")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @PostMapping("/export")
+    public void export(HttpServletResponse response, ${ClassName} ${className})
+    {
+        List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
+        // 实现导出
+    }
+
+    /**
+     * 获取${functionName}详细信息
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "获取${functionName}详细信息")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @GetMapping(value = "/{${pkColumn.javaField}}")
+    public JsonResult<${className}> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
+    {
+        return JsonResult.success(${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+    }
+
+    /**
+     * 新增${functionName}
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "新增${functionName}")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @PostMapping
+    public JsonResult<Object> add(@RequestBody ${ClassName} ${className})
+    {
+        return JsonResult.success(${className}Service.insert${ClassName}(${className}));
+    }
+
+    /**
+     * 修改${functionName}
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "新增修改${functionName}")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @PutMapping
+    public JsonResult<Object> edit(@RequestBody ${ClassName} ${className})
+    {
+        return JsonResult.success(${className}Service.update${ClassName}(${className}));
+    }
+
+    /**
+     * 删除${functionName}
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "删除${functionName}")
+    @ApiResponse(code = 200, message = "success")
+    #end
+	@DeleteMapping("/{${pkColumn.javaField}List}")
+    public JsonResult<Object> remove(@PathVariable List<${pkColumn.javaType}> ${pkColumn.javaField}List)
+    {
+        return JsonResult.success(${className}Service.delete${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List));
+    }
+}

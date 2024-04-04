@@ -1,0 +1,99 @@
+package ${packageName}.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import ${packageName}.mapper.${ClassName}Mapper;
+import ${packageName}.domain.${ClassName};
+import ${packageName}.service.I${ClassName}Service;
+
+/**
+ * ${functionName}Service业务层处理
+ * 
+ * @author ${author}
+ * @date ${datetime}
+ */
+@Service
+public class ${ClassName}ServiceImpl implements I${ClassName}Service 
+{
+    @Autowired
+    private ${ClassName}Mapper ${className}Mapper;
+
+    /**
+     * 查询${functionName}
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return ${functionName}
+     */
+    @Override
+    public PageInfo<${ClassName}>  select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}, Integer pageNum, Integer pageSize)
+    {
+        pageNum = Optional.ofNullable(pageNum).orElse(1);
+        pageSize = Optional.ofNullable(pageSize).orElse(10);
+        return PageHelper.startPage(pageNum, pageSize)
+                .doSelectPageInfo(() -> ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+    }
+
+    /**
+     * 查询${functionName}列表
+     * 
+     * @param ${className} ${functionName}
+     * @return ${functionName}
+     */
+    @Override
+    public List<${ClassName}> select${ClassName}List(${ClassName} ${className})
+    {
+        return ${className}Mapper.select${ClassName}List(${className});
+    }
+
+    /**
+     * 新增${functionName}
+     * 
+     * @param ${className} ${functionName}
+     * @return 结果
+     */
+    @Override
+    public int insert${ClassName}(${ClassName} ${className})
+    {
+        return ${className}Mapper.insert${ClassName}(${className});
+    }
+
+    /**
+     * 修改${functionName}
+     * 
+     * @param ${className} ${functionName}
+     * @return 结果
+     */
+    @Override
+    public int update${ClassName}(${ClassName} ${className})
+    {
+        return ${className}Mapper.update${ClassName}(${className});
+    }
+
+    /**
+     * 批量删除${functionName}
+     * 
+     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键
+     * @return 结果
+     */
+    @Override
+    public int delete${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List)
+    {
+        return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}List);
+    }
+
+    /**
+     * 删除${functionName}信息
+     * 
+     * @param ${pkColumn.javaField} ${functionName}主键
+     * @return 结果
+     */
+    @Override
+    public int delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
+    {
+        return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
+    }
+
+}
