@@ -10,7 +10,6 @@ import 'element-ui/lib/theme-chalk/index.css';
 
 Vue.config.productionTip = false
 
-// Vue.component(Pagination.name, Pagination);
 Vue.component(Dialog.name, Dialog);
 Vue.component(Button.name, Button);
 Vue.component(Switch.name, Switch);
