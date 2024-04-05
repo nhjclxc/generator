@@ -23,6 +23,8 @@ public class GeneratorCodeDTO implements Serializable {
     private String tables;
     /** 是否开启swagger注解 */
     private Boolean enableSwagger = true;
+    /** 是否开启Lombok注解 */
+    private Boolean enableLombok = true;
     /** 代码作者 */
     private String author = "";
     /** 默认生成包路径  需改成自己的模块名称  */

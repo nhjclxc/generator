@@ -24,7 +24,7 @@ import java.util.zip.ZipOutputStream;
 /**
  *  代码生成服务层实现
  *
- * @author LuoXianchao
+ * @author 罗贤超
  */
 @Slf4j
 @Service
@@ -35,30 +35,85 @@ public class GeneratorService {
 //	private static final String username = "root";
 //	private static final String password = "root123";
 
-	private Connection conn = null;
-	private Statement stmt = null;
+
+
+		/* 确保多人同时可用
+			1、搞一个连接池 使用HashMap
+			2、使用uuid返回给前端，作为标识
+			3、前端保存在sessionStorage里面，除连接数据库的接口不带uuid，其余接口都要待uuid
+			4、前端在请求拦截器里面加上对应的uuid头部
+			5、vue组件销毁前发送一个请求将对应的连接池里面的连接删除，确保连接池不会发生只增不减
+		 */
+
+	private final Map<String, DBSession> dbConnectPool = new HashMap<>();
+
+	public boolean removeSessionUuid(String sessionUuid){
+		DBSession remove = null;
+		if (dbConnectPool.containsKey(sessionUuid)) {
+			remove = dbConnectPool.remove(sessionUuid);
+		}
+		return remove != null;
+	}
+
 
 	/** 连接数据库 */
-	public void connect(JDBCObject jdbcObject) {
-		if (this.conn != null){
-			return;
-		}
+	public String connect(JDBCObject jdbcObject) {
 		try {
-			this.conn = DriverManager.getConnection(jdbcObject.getJdbcUrl(), jdbcObject.getUsername(), jdbcObject.getPassword());
-			this.stmt = conn.createStatement();
+			Connection connection = DriverManager.getConnection(jdbcObject.getJdbcUrl(), jdbcObject.getUsername(), jdbcObject.getPassword());
+			Statement statement = connection.createStatement();
+			String sessionUuid = UUID.randomUUID().toString().replaceAll("-", "");
+			DBSession dbSession = DBSession.builder().connct(connection).statement(statement).sessionUuid(sessionUuid).build();
+			dbConnectPool.put(sessionUuid, dbSession);
+			return sessionUuid;
 		} catch (SQLException e) {
 			throw new RuntimeException("数据库连接异常：" + e.getMessage());
 		}
 	}
 
+	/**
+	 * 关闭数据库连接
+	 */
+	public String closeConnect( ) {
+		DBSession dbSession = getDbSession();
+		try {
+			// 关闭资源
+			Statement statement = dbSession.getStatement();
+			if (statement != null)
+				statement.close();
+
+			Connection connct = dbSession.getConnct();
+			if (connct != null)
+				connct.close();
+		} catch (SQLException se) {
+			throw new RuntimeException("databases session close happend exception：" + se.getMessage());
+		}
+
+		return "databases session was closed !!!";
+	}
+
+	/**
+	 * 获取当前的数据库连接对象
+	 */
+	private DBSession getDbSession() {
+		String sessionUuid = ContextHolder.getAuthorization();
+		DBSession dbSession = dbConnectPool.get(sessionUuid);
+		if (dbSession == null){
+			throw new RuntimeException("databases session error：会话不存在");
+		}
+		return dbSession;
+	}
+
 	/** 执行sql */
 	public ResultSet executeSql(String sql) throws SQLException {
+		// threadLocal里面获取会话数据库信息
+		DBSession dbSession = getDbSession();
 
-		if (this.stmt == null){
+		Statement statement = dbSession.getStatement();
+		if (statement == null){
 			throw new RuntimeException("请先连接数据库");
 		}
 		log.info("executeSql {}：{}", LocalDateTime.now(), sql);
-		return this.stmt.executeQuery(sql);
+		return statement.executeQuery(sql);
 	}
 
 	/** 更新配置 */
@@ -68,12 +123,10 @@ public class GeneratorService {
 		GenConfig.setAutoRemovePre(dto.getAutoRemovePre());
 		GenConfig.setTablePrefix(dto.getTablePrefix());
 		GenConfig.setEnableSwagger(dto.getEnableSwagger());
+		GenConfig.setEnableLombok(dto.getEnableLombok());
 	}
 
-	public PageInfo<GenTable> parse(JDBCObject jdbcObject, GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
-
-		// 连接数据库
-		connect(jdbcObject);
+	public PageInfo<GenTable> parse(GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
 
 		// 刷新代码生成配置
 		flushGenConfig(dto);
@@ -167,6 +220,7 @@ public class GeneratorService {
 			GenUtils.initTable(table, GenConfig.author);
 			tableList.add(table);
 		}
+		tablesRes.close();
 		return tableList;
 	}
 
@@ -191,13 +245,7 @@ public class GeneratorService {
 		// 表数据与字段数据绑定
 		for (GenTable table : tableList) {
 			// 保存列信息
-			List<GenTableColumn> genTableColumns = genTableColumnsMap.get(table.getTableName());
-			List<GenTableColumn> columns = new ArrayList<>();
-			for (GenTableColumn column : genTableColumns) {
-				GenUtils.initColumnField(column, table);
-				columns.add(column);
-			}
-			table.setColumns(columns);
+			table.setColumns(genTableColumnsMap.get(table.getTableName()));
 		}
 
 		// 第三步：生成代码
@@ -220,12 +268,15 @@ public class GeneratorService {
 
 		List<GenTableColumn> genTableColumnsList = new ArrayList<>();
 		while (columnsRes.next()) {
-			genTableColumnsList.add(GenTableColumn.builder().tableName(columnsRes.getString("table_name"))
+			GenTableColumn column = GenTableColumn.builder().tableName(columnsRes.getString("table_name"))
 					.columnName(columnsRes.getString("column_name")).sort(columnsRes.getInt("sort"))
 					.columnComment(columnsRes.getString("column_comment")).columnType(columnsRes.getString("column_type"))
 					.isRequired(columnsRes.getString("is_required")).isPk(columnsRes.getString("is_pk"))
-					.isIncrement(columnsRes.getString("is_increment")).build());
+					.isIncrement(columnsRes.getString("is_increment")).build();
+			GenUtils.initColumnField(column);
+			genTableColumnsList.add(column);
 		}
+		columnsRes.close();
 		return genTableColumnsList;
 	}
 
@@ -308,13 +359,16 @@ public class GeneratorService {
 	 *
 	 * @return 预览数据列表
 	 */
-	public Map<String, String> previewCode(String tableName) throws SQLException {
+	public Map<String, String> previewCode(GeneratorCodeDTO dto) throws SQLException {
+		flushGenConfig(dto);
+
 		Map<String, String> dataMap = new LinkedHashMap<>();
 		// 查询表信息
-		List<GenTable> tableList = genTableList(tableName, null, false, true);
+		String tables = dto.getTables();
+		List<GenTable> tableList = genTableList(tables, null, false, true);
 		GenTable table = tableList.get(0);
 		// 获取列信息
-		List<GenTableColumn> columns = getColumnsList("'" + tableName + "'");
+		List<GenTableColumn> columns = getColumnsList("'" + tables + "'");
 		table.setColumns(columns);
 
 		// 设置主键列信息

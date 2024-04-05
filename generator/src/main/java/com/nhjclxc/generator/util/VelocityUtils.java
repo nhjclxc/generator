@@ -7,7 +7,7 @@ import com.nhjclxc.generator.model.GenTable;
 import com.nhjclxc.generator.model.GenTableColumn;
 import org.apache.velocity.VelocityContext;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +54,7 @@ public class VelocityUtils
         velocityContext.put("basePackage", getPackagePrefix(packageName));
         velocityContext.put("packageName", packageName);
         velocityContext.put("author", genTable.getFunctionAuthor());
-        velocityContext.put("datetime", LocalDate.now());
+        velocityContext.put("datetime", LocalDateTime.now());
         velocityContext.put("pkColumn", genTable.getPkColumn());
         velocityContext.put("importList", getImportList(genTable));
         velocityContext.put("permissionPrefix", getPermissionPrefix(moduleName, businessName));
@@ -62,6 +62,7 @@ public class VelocityUtils
         velocityContext.put("table", genTable);
         velocityContext.put("dicts", getDicts(genTable));
         velocityContext.put("enableSwagger", GenConfig.enableSwagger);
+        velocityContext.put("enableLombok", GenConfig.enableLombok);
         setMenuVelocityContext(velocityContext, genTable);
         if (GenConstants.TPL_TREE.equals(tplCategory))
         {
@@ -174,6 +175,8 @@ public class VelocityUtils
         String className = genTable.getClassName();
         // 业务名称
         String businessName = genTable.getBusinessName();
+        // 业务名称
+        String tableName = genTable.getTableName();
 
         String javaPath = PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
         String mybatisPath = MYBATIS_PATH + "/" + moduleName;
@@ -205,7 +208,7 @@ public class VelocityUtils
         }
         else if (template.contains("sql.vm"))
         {
-            fileName = businessName + "Menu.sql";
+            fileName = tableName + "_menu.sql";
         }
         else if (template.contains("api.js.vm"))
         {

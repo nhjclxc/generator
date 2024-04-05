@@ -32,10 +32,6 @@ import java.util.Map;
 public class GenTable implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "$column.columnComment")
-    /** 编号 */
-    private Long tableId;
-
     /** 表名称 */
     @NotBlank(message = "表名称不能为空")
     private String tableName;

@@ -1,6 +1,7 @@
 package com.nhjclxc.generator.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.nhjclxc.generator.model.ContextHolder;
 import com.nhjclxc.generator.model.GenTable;
 import com.nhjclxc.generator.model.GeneratorCodeDTO;
 import com.nhjclxc.generator.model.JDBCObject;
@@ -14,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -37,9 +39,46 @@ public class GeneratorController {
      */
     @ApiOperation(value = "连接到数据库")
     @ApiResponse(code = 200, message = "success")
+    @GetMapping("/connect")
+    public JsonResult<PageInfo<GenTable>> connect(JDBCObject jdbcObject, HttpServletRequest request, HttpServletResponse response) throws SQLException {
+        // 关闭上一个连接，防止一个浏览器客户端不断发起连接请求的情况，导致连接数不断增加
+        String preSessionUuid = request.getHeader(ContextHolder.Authorization);
+        System.out.println("preSessionUuid" + preSessionUuid);
+        boolean b = generatorService.removeSessionUuid(preSessionUuid);
+
+        String sessionUuid = generatorService.connect(jdbcObject);
+        // 返回会话uuid
+        // 先暴露这个响应头，之后在设置对应的响应头，不暴露的话前端拿不到对应的响应头
+        response.addHeader("Access-Control-Expose-Headers", ContextHolder.Authorization);
+        response.setHeader(ContextHolder.Authorization, sessionUuid);
+
+        //设置会话，下面获取数据要用
+        ContextHolder.setAuthorization(sessionUuid);
+
+        // 获取默认数据
+        PageInfo<GenTable> tablePageInfo = generatorService.parse(new GeneratorCodeDTO(), 1, 10);
+        return JsonResult.success("数据库连接成功 ！！！", tablePageInfo);
+    }
+
+    /**
+     * 关闭数据库连接
+     */
+    @ApiOperation(value = "关闭数据库连接")
+    @ApiResponse(code = 200, message = "success")
+    @GetMapping("/closeConnect")
+    public JsonResult<String> closeConnect() {
+        return JsonResult.success(generatorService.closeConnect());
+    }
+
+
+    /**
+     * 解析数据库表结构
+     */
+    @ApiOperation(value = "连接到数据库")
+    @ApiResponse(code = 200, message = "success")
     @GetMapping("/parse")
-    public JsonResult<PageInfo<GenTable>> parse(JDBCObject jdbcObject, GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
-        return JsonResult.success(generatorService.parse(jdbcObject, dto, pageNum, pageSize));
+    public JsonResult<PageInfo<GenTable>> parse(GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
+        return JsonResult.success(generatorService.parse(dto, pageNum, pageSize));
     }
 
     /**
@@ -51,13 +90,12 @@ public class GeneratorController {
         write(response, data, dto.getTables());
     }
 
-
     /**
      * 预览代码
      */
-    @GetMapping("/preview/{tableName}")
-    public JsonResult<Map<String, String>> preview(@PathVariable("tableName") String tableName) throws IOException, SQLException {
-        Map<String, String> dataMap = generatorService.previewCode(tableName);
+    @GetMapping("/preview")
+    public JsonResult<Map<String, String>> preview(GeneratorCodeDTO dto) throws IOException, SQLException {
+        Map<String, String> dataMap = generatorService.previewCode(dto);
         return JsonResult.success(dataMap);
     }
 

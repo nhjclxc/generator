@@ -15,13 +15,13 @@ public class GenConfig
     public static String packageName;
 
     /** 自动去除表前缀，默认是false */
-    public static boolean autoRemovePre;
+    public static boolean autoRemovePre = false;
 
     /** 表前缀(类名不会包含表前缀) */
     public static String tablePrefix;
 
     /** 是否开启swagger注解 */
-    public static Boolean enableSwagger;
+    public static Boolean enableSwagger = true;
 
     public static Boolean getEnableSwagger() {
         return enableSwagger;
@@ -29,6 +29,16 @@ public class GenConfig
 
     public static void setEnableSwagger(Boolean enableSwagger) {
         GenConfig.enableSwagger = enableSwagger;
+    }
+    /** 是否开启Lombok注解 */
+    public static Boolean enableLombok = true;
+
+    public static Boolean getEnableLombok() {
+        return enableLombok;
+    }
+
+    public static void setEnableLombok(Boolean enableLombok) {
+        GenConfig.enableLombok = enableLombok;
     }
 
     public static String getAuthor()
@@ -51,12 +61,12 @@ public class GenConfig
         GenConfig.packageName = packageName;
     }
 
-    public static boolean getAutoRemovePre()
+    public static Boolean getAutoRemovePre()
     {
         return autoRemovePre;
     }
 
-    public static void setAutoRemovePre(boolean autoRemovePre)
+    public static void setAutoRemovePre(Boolean autoRemovePre)
     {
         GenConfig.autoRemovePre = autoRemovePre;
     }

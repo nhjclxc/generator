@@ -3,14 +3,15 @@ package ${packageName}.domain;
 #foreach ($import in $importList)
 import ${import};
 #end
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
+#if(${enableLombok})
 import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.experimental.Accessors;
+#end
+
 #if(${enableSwagger})
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -23,11 +24,13 @@ import io.swagger.annotations.ApiModelProperty;
  * @date ${datetime}
  */
 
+#if(${enableLombok})
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+#end
 #if(${enableSwagger})
 @ApiModel(value = "${packageName}.domain.${ClassName}", description = "${functionName}对象 ${tableName}")
 #end

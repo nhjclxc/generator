@@ -34,12 +34,10 @@ public class GenUtils
     /**
      * 初始化列属性字段
      */
-    public static void initColumnField(GenTableColumn column, GenTable table)
+    public static void initColumnField(GenTableColumn column)
     {
         String dataType = getDbType(column.getColumnType());
         String columnName = column.getColumnName();
-        column.setTableId(table.getTableId());
-        column.setCreateBy(table.getCreateBy());
         // 设置java字段名
         column.setJavaField(StringUtils.toCamelCase(columnName));
         // 设置默认类型
