@@ -252,7 +252,7 @@ public class GeneratorService {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		ZipOutputStream zip = new ZipOutputStream(outputStream);
 		for (GenTable genTable : tableList) {
-			generatorCode(genTable, zip);
+			generatorCode(genTable, dto.getEnableVue3(), zip);
 		}
 		IOUtils.closeQuietly(zip);
 		return outputStream.toByteArray();
@@ -281,9 +281,9 @@ public class GeneratorService {
 	}
 
 	/**
-	 * 查询表信息并生成代码
+	 * 根据表信息生成代码
 	 */
-	private void generatorCode(GenTable table, ZipOutputStream zip) {
+	private void generatorCode(GenTable table, Boolean enableVue3, ZipOutputStream zip) {
 		// 表信息
 		//GenTable table
 
@@ -295,7 +295,7 @@ public class GeneratorService {
 		VelocityContext context = VelocityUtils.prepareContext(table);
 
 		// 获取模板列表
-		List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), table.getTplWebType());
+		List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), enableVue3);
 		for (String template : templates)
 		{
 			// 渲染模板
@@ -378,7 +378,7 @@ public class GeneratorService {
 		VelocityContext context = VelocityUtils.prepareContext(table);
 
 		// 获取模板列表
-		List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), table.getTplWebType());
+		List<String> templates = VelocityUtils.getTemplateList(table.getTplCategory(), dto.getEnableVue3());
 		for (String template : templates)
 		{
 			// 渲染模板

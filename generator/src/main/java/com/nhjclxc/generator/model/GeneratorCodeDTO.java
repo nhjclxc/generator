@@ -40,4 +40,7 @@ public class GeneratorCodeDTO implements Serializable {
     /** 表描述 */
     private String tableComment;
 
+    /** 前端类型（false使用vm/vue，true则使用 vm/vue/v3） */
+    private Boolean enableVue3 = false;
+
 }

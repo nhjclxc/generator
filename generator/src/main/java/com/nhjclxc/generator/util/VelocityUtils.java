@@ -126,14 +126,13 @@ public class VelocityUtils
     /**
      * 获取模板信息
      * @param tplCategory 生成的模板
-     * @param tplWebType 前端类型
+     * @param enableVue3 是否使用vue3的前端模板。false使用vm/vue，true则使用 vm/vue/v3
      * @return 模板列表
      */
-    public static List<String> getTemplateList(String tplCategory, String tplWebType)
+    public static List<String> getTemplateList(String tplCategory, Boolean enableVue3)
     {
         String useWebType = "vm/vue";
-        if ("element-plus".equals(tplWebType))
-        {
+        if (Boolean.TRUE.equals(enableVue3)) {
             useWebType = "vm/vue/v3";
         }
         List<String> templates = new ArrayList<String>();
