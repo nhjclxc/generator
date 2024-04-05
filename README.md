@@ -3,7 +3,7 @@
 
 ***
 
-​	PS：项目原始代码来源于[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)，本人对[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)代码生成部分进行单独提取并且进一步对代码生成模板进行更佳通用的适配修改，以至于不局限与[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)内部使用。
+​	PS：项目原始代码来源于[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)，本人对[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)代码生成部分进行单独提取并且进一步对代码生成模板进行更佳通用的适配修改，以至于不局限于[若依框架](https://gitee.com/y_project/RuoYi-Vue.git)内部使用。
 
 ***
 
@@ -39,15 +39,15 @@ git clone https://github.com/nhjclxc/generator.git
 
 1. 进入前端项目
 
-   ​	`cd generator`-ui
+   ​	`cd generator-ui`
 
-2. 打包后端
+2. 打包前端
 
    ​	`npm install`
 
 3. 启动
 
-   ​	`run run serve` 
+   ​	`npm run serve` 
 
 前端项目启动在9098端口
 
