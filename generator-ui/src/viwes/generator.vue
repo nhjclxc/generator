@@ -72,6 +72,16 @@
             @change="changeEnableLombok">
           </el-switch>
         </el-form-item>
+        <el-form-item prop="enableVue3"">
+          <el-switch
+            style="display: block"
+            v-model="queryParams.enableVue3"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            inactive-text="enableVue3"
+            @change="changeEnableVue3">
+          </el-switch>
+        </el-form-item>
       </div>
 
       <!-- 搜索相关 -->
@@ -116,7 +126,7 @@
 
     <!-- 数据列表，表格 -->
     <el-table v-loading="loading" :data="tableList" @selection-change="handleSelectionChange"
-      style="width: 95%; margin: auto">
+      style="width: 90%; margin: auto">
 
       <el-table-column type="selection" align="center" style="width: 5%;"></el-table-column>
       <el-table-column label="序号" type="index" style="width: 5%;" align="center">
@@ -166,6 +176,7 @@
     <!-- 分页插件 -->
     <el-pagination
         align="right" 
+        style="margin-right: 5%;"
         :current-page.sync="queryParams.pageNum"
         :page-sizes="[10,20,30,50]"
         :page-size.sync="queryParams.pageSize"
@@ -239,6 +250,7 @@ export default {
         password: 'root123',
         enableLombok: true,
         enableSwagger: true,
+        changeEnableVue3: false,
       },
       // 预览参数
       preview: {
@@ -269,6 +281,9 @@ export default {
     },
     changeEnableSwagger(value){
       this.queryParams.enableSwagger = value
+    },
+    changeEnableVue3(value){
+      this.queryParams.enableVue3 = value
     },
     /** 查询表集合 */
     getList() {
@@ -311,6 +326,7 @@ export default {
       genCode({
         'enableLombok': this.queryParams.enableLombok,
         'enableSwagger': this.queryParams.enableSwagger,
+        'enableVue3': this.queryParams.enableVue3,
         'author': this.queryParams.author,
         'packageName': this.queryParams.packageName,
         'autoRemovePre': this.queryParams.autoRemovePre,
@@ -349,6 +365,7 @@ export default {
       previewTable({
         'enableLombok': this.queryParams.enableLombok,
         'enableSwagger': this.queryParams.enableSwagger,
+        'enableVue3': this.queryParams.enableVue3,
         'author': this.queryParams.author,
         'packageName': this.queryParams.packageName,
         'autoRemovePre': this.queryParams.autoRemovePre,
