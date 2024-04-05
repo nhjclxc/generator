@@ -84,9 +84,14 @@ public class GeneratorService {
 			Connection connct = dbSession.getConnct();
 			if (connct != null)
 				connct.close();
+
+			// 连接池里面移除改对象
+			this.dbConnectPool.remove(dbSession.getSessionUuid());
+
 		} catch (SQLException se) {
 			throw new RuntimeException("databases session close happend exception：" + se.getMessage());
 		}
+		log.info("databases session was closed !!! --- {}", dbSession.getSessionUuid());
 
 		return "databases session was closed !!!";
 	}
