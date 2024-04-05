@@ -8,6 +8,8 @@ let downloadLoadingInstance;
 
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 
+const Authorization = 'Authorization'
+
 
 // 创建axios实例
 const service = axios.create({
@@ -28,6 +30,18 @@ service.interceptors.request.use(config => {
     config.params = {};
     config.url = url;
   }
+  // 添加会话sessionUuid
+  const flag = isConnect(config.url)
+
+  // sessionStorage.setItem('msg','hello!!!')  连接接口响应
+  // const result = sessionStorage.getItem('person')   除连接接口外的其他接口
+  // sessionStorage.removeItem('msg2')   组件销毁
+
+  // 所有请求添加Authorization头，connect添加是为了，删除上一个连接
+  const sessionUuid = sessionStorage.getItem(Authorization)
+  config.headers['Authorization'] = sessionUuid 
+
+
   return config
 }, error => {
     console.log(error)
@@ -42,11 +56,19 @@ service.interceptors.response.use(res => {
     // 获取错误信息
     const msg = errorCode[code] || res.data.msg || errorCode['default']
 
+
     if (code < 200 || code > 300){
       // console.log('接口异常');
       Message({ message: msg, type: 'error' })
       return Promise.reject(new Error(msg))
-
+    }
+    const flag = isConnect(res.config.url)
+    // flag=true向sessionStorage里面添加添加Authorization
+    if (flag){
+      let sessionUuid = res.headers['authorization']
+      sessionStorage.setItem(Authorization, sessionUuid)
+      // console.log('sessionStorage.get', sessionStorage.getItem(Authorization));
+      Message({ message: msg, type: 'success' })
     }
 
     // 二进制数据则直接返回
@@ -69,6 +91,23 @@ service.interceptors.response.use(res => {
     return Promise.reject(error)
   }
 )
+
+/**
+ * 判断是不是连接数据库的请求
+ * @param {} url 请求地址
+ * @returns true是，否则不是
+ */
+function isConnect(url){
+  const regex = /^\/gen\/connect/;
+  const match = url.match(regex);
+
+  if (match && match.length > 0) {
+      // const extracted = match[0];
+      // console.log(extracted); 
+      return true;
+  }
+  return false
+}
 
 // 通用下载方法
 export function download(url, params, filename, config) {

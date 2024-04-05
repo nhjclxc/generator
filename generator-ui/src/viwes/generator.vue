@@ -4,7 +4,7 @@
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" :inline-message="true" label-width="68px">
       <!-- 数据库相关配置 -->
       <div style="width: 100%;">
-        <el-form-item label="jdbcUrl" prop="jdbcUrl" >
+        <el-form-item label="jdbcUrl" prop="jdbcUrl"  type="flex" justify="start" >
         <el-input
           v-model="queryParams.jdbcUrl"
           placeholder="数据库地址, 如：jdbc:mysql://127.0.0.1:3306/test，test表示数据库的一个Schema"
@@ -94,13 +94,8 @@
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
-
-    <!-- 批量生成代码按钮 -->
-    <el-row :gutter="10" class="mb8" type="flex" justify="end" style="margin-right: 5%;">
-      <el-col :span="1.5">
-        <el-button
+        <!-- 批量生成代码按钮 -->
+        <el-button 
           type="primary"
           plain
           icon="el-icon-download"
@@ -108,6 +103,14 @@
           :disabled="multiple"
           @click="handleGenTable"
         >批量生成代码</el-button>
+        
+        <el-button type="success" @click="handleConnect">连接数据库</el-button>
+
+      </el-form-item>
+    </el-form>
+
+    <el-row :gutter="10" class="mb8" type="flex" justify="end" style="margin-right: 5%;">
+      <el-col :span="1.5">
       </el-col>
     </el-row>
 
@@ -190,7 +193,7 @@
 </template>
 
 <script>
-import { listTable, previewTable, genCode  } from "@/utils/generatorAPI";
+import { connect, closeConnect, listTable, previewTable, genCode  } from "@/utils/generatorAPI";
 
 import { Message } from 'element-ui'
 
@@ -230,7 +233,7 @@ export default {
         tables: '',
         tableComment: '',
         author: '',
-        packageName: 'com.example123',
+        packageName: 'com.example',
         jdbcUrl: 'jdbc:mysql://127.0.0.1:3306/test',  // 后端项目里面配置文件的数据库地址
         username: 'root',
         password: 'root123',
@@ -247,7 +250,7 @@ export default {
     };
   },
   created() {
-    this.getList();
+    // this.getList();
   },
   activated() {
     this.getList();
@@ -270,7 +273,13 @@ export default {
     /** 查询表集合 */
     getList() {
       this.loading = true;
-      listTable(this.queryParams).then(response => {
+      
+      listTable({
+        'pageNum': this.queryParams.pageNum,
+        'pageSize': this.queryParams.pageSize,
+        'tableName': this.queryParams.tableName,
+        'tableComment': this.queryParams.tableComment
+      }).then(response => {
           this.tableList = response.list;
           this.total = response.total;
           this.loading = false;
@@ -298,9 +307,16 @@ export default {
         return;
       }
 
-      this.queryParams.tables = tableNames
       // 请求后端接口
-      genCode(this.queryParams);
+      genCode({
+        'enableLombok': this.queryParams.enableLombok,
+        'enableSwagger': this.queryParams.enableSwagger,
+        'author': this.queryParams.author,
+        'packageName': this.queryParams.packageName,
+        'autoRemovePre': this.queryParams.autoRemovePre,
+        'tablePrefix': this.queryParams.tablePrefix,
+        'tables': tableNames
+      });
     },
     /** 重置按钮操作 */
     resetQuery() {
@@ -310,9 +326,35 @@ export default {
       }
       this.handleQuery();
     },
+    /** 连接数据库 */
+    handleConnect() {
+      // 请求后端接口
+      connect({
+        'jdbcUrl': this.queryParams.jdbcUrl,
+        'username': this.queryParams.username,
+        'password': this.queryParams.password
+      }).then(response => {
+          this.tableList = response.list;
+          this.total = response.total;
+          this.loading = false;
+        }
+      ).catch(err => {
+        this.loading = false;
+        console.log('handleConnect 查询表集合异常', err.message);
+      });
+    },
     /** 预览按钮 */
     handlePreview(row) {
-      previewTable(row.tableName).then(response => {
+      
+      previewTable({
+        'enableLombok': this.queryParams.enableLombok,
+        'enableSwagger': this.queryParams.enableSwagger,
+        'author': this.queryParams.author,
+        'packageName': this.queryParams.packageName,
+        'autoRemovePre': this.queryParams.autoRemovePre,
+        'tablePrefix': this.queryParams.tablePrefix,
+        'tables': row.tableName
+      }).then(response => {
         this.preview.data = response;
         this.preview.open = true;
         this.preview.activeName = "domain.java";
