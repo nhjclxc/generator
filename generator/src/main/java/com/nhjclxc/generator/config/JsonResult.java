@@ -1,18 +1,22 @@
 package com.nhjclxc.generator.config;
 
-import com.nhjclxc.generator.util.StringUtils;
-import lombok.Data;
-
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-@Data
+/**
+ * 通用的返回结果集
+ *
+ * @author LuoXianchao
+ * @param <T> 泛型数据类型
+ */
 public class JsonResult<T> implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
      * 是否成功 true or false
      */
-    private boolean success;
+    private Boolean success;
 
     /**
      * 状态码
@@ -35,30 +39,27 @@ public class JsonResult<T> implements Serializable {
     public enum Type
     {
         /** 成功 */
-        SUCCESS(0),
+        SUCCESS(0, "成功"),
         /** 警告 */
-        WARN(301),
+        WARN(301, "警告 */"),
         /** 错误 */
-        ERROR(500);
+        ERROR(500, "错误");
         private final int value;
+        private final String typeName;
 
-        Type(int value)
-        {
+        Type(int value, String typeName) {
             this.value = value;
+            this.typeName = typeName;
         }
 
-        public int value()
-        {
-            return this.value;
-        }
+        public int value() {  return this.value; }
+        public String typeName() {  return this.typeName; }
     }
 
     /**
      * 初始化一个新创建的 AjaxResult 对象，使其表示一个空消息。
      */
-    public JsonResult()
-    {
-    }
+    public JsonResult() { }
 
     /**
      * 初始化一个新创建的 AjaxResult 对象
@@ -70,7 +71,7 @@ public class JsonResult<T> implements Serializable {
     public JsonResult(Type type, String msg, T data) {
         this.code = type.value();
         this.msg = msg;
-        if (StringUtils.isNotNull(data)) {
+        if (null != data) {
             this.data = data;
         }
 
@@ -150,7 +151,7 @@ public class JsonResult<T> implements Serializable {
     /**
      * 返回错误消息
      *
-     * @return
+     * @return 警告消息
      */
     public static <T> JsonResult<T> error()
     {
@@ -182,24 +183,39 @@ public class JsonResult<T> implements Serializable {
 
 
     /**
-     * 方便链式调用
+     * 往data为map类型的数据里面添加keyvalue的数据
      *
-     * @param key   键
-     * @param value 值
-     * @return 数据对象
+     * @param key map对应的key值
+     * @param value 改key对应的value值
+     * @return 返回本对象
      */
-    @Deprecated
     public JsonResult<T> put(String key, Object value) {
-		//super.put(key, value);
-        return this;
+        if (this.data instanceof Map){
+            Map<String, Object> data = (Map<String, Object>) this.data;
+            data.put(key, value);
+            return this; // 支持链式调用
+        }
+        throw new RuntimeException("data对应的泛型不支持put方法");
     }
 
     /**
-     * 是否为成功消息
-     *
-     * @return 结果
+     * 返回一个泛型为Map的JsonResult对象
      */
-    public boolean isSuccess() {
+    public static JsonResult<Map<String, Object>> getMapInstance(){
+//        JsonResult<Map<String, Object>> put = JsonResult.getMapInstance().put("key0", "data100").put("key1", "data11").put("key2", "data22").put("key3", "data33");
+//        {"code":0,"data":{"key1":"data11","key2":"data22","key0":"data100","key3":"data33"},"msg":"操作成功","success":true}
+        return JsonResult.success(new HashMap<>());
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void getData(T data) {
+        this.data = data;
+    }
+
+    public boolean getSuccess() {
         return success;
     }
 
@@ -209,5 +225,17 @@ public class JsonResult<T> implements Serializable {
 
     public Integer getCode() {
         return code;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public void setCode(Integer code) {
+        this.code = code;
     }
 }
