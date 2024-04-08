@@ -2,7 +2,7 @@ package ${packageName}.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.security.access.prepost.PreAuthorize;
+import com.github.pagehelper.PageInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,9 +30,9 @@ import io.swagger.annotations.ApiResponse;
 @RestController
 @RequestMapping("/${moduleName}/${businessName}")
 #if(${enableSwagger})
-@Api(tags = "${functionName}管理", description = "")
+@Api(tags = "${ClassName}Controller", description = "${functionName}管理")
 #end
-public class ${ClassName}Controller extends BaseController
+public class ${ClassName}Controller
 {
     @Autowired
     private I${ClassName}Service ${className}Service;
@@ -73,7 +73,7 @@ public class ${ClassName}Controller extends BaseController
     @ApiResponse(code = 200, message = "success")
     #end
     @GetMapping(value = "/{${pkColumn.javaField}}")
-    public JsonResult<${className}> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
+    public JsonResult<${ClassName}> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
     {
         return JsonResult.success(${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
     }

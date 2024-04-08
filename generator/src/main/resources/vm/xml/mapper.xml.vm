@@ -114,7 +114,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
-    <select id="select${ClassName}By${pkColumn.capJavaField}List" parameterType="${pkColumn.javaType}">
+    <select id="select${ClassName}By${pkColumn.capJavaField}List" parameterType="${pkColumn.javaType}" resultMap="${ClassName}Result">
         <include refid="select${ClassName}Vo"/>
         where ${pkColumn.columnName} in
         <foreach collection="${pkColumn.javaField}List" item="${pkColumn.javaField}" open="(" separator="," close=")">

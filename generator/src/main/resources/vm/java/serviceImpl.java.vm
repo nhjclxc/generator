@@ -1,6 +1,8 @@
 package ${packageName}.service.impl;
 
 import java.util.List;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,17 +30,29 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return ${functionName}
      */
     @Override
-    public PageInfo<${ClassName}>  select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}, Integer pageNum, Integer pageSize)
+    public ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
     {
-        pageNum = Optional.ofNullable(pageNum).orElse(1);
-        pageSize = Optional.ofNullable(pageSize).orElse(10);
-        return PageHelper.startPage(pageNum, pageSize)
-                .doSelectPageInfo(() -> ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
+        return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
     }
 
     /**
      * 查询${functionName}列表
      * 
+     * @param ${className} ${functionName}
+     * @return ${functionName}
+     */
+    @Override
+    public PageInfo<${ClassName}> select${ClassName}List(${ClassName} ${className}, Integer pageNum, Integer pageSize)
+    {
+        pageNum = Optional.ofNullable(pageNum).orElse(1);
+        pageSize = Optional.ofNullable(pageSize).orElse(10);
+        return PageHelper.startPage(pageNum, pageSize)
+                .doSelectPageInfo(() -> ${className}Mapper.select${ClassName}List(${className}));
+    }
+
+    /**
+     * 查询${functionName}列表
+     *
      * @param ${className} ${functionName}
      * @return ${functionName}
      */
@@ -75,14 +89,27 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
     /**
      * 批量删除${functionName}
      * 
-     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键
+     * @param ${pkColumn.javaField}List 需要删除的${functionName}主键
      * @return 结果
      */
     @Override
     public int delete${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List)
     {
-        return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}s(${pkColumn.javaField}List);
+        return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List);
     }
+
+    /**
+     * 批量查询${functionName}
+     *
+     * @param ${pkColumn.javaField}List 需要查询的数据主键集合
+     * @return 结果
+     */
+    public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List)
+    {
+        return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List);
+    }
+
+
 
     /**
      * 删除${functionName}信息

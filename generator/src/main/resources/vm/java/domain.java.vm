@@ -17,6 +17,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 #end
 
+import java.io.Serializable;
+
 /**
  * ${functionName}对象 ${tableName}
  * 

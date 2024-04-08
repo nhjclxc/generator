@@ -1,6 +1,7 @@
 package ${packageName}.service;
 
 import java.util.List;
+import com.github.pagehelper.PageInfo;
 import ${packageName}.domain.${ClassName};
 
 /**
@@ -17,7 +18,7 @@ public interface I${ClassName}Service
      * @param ${pkColumn.javaField} ${functionName}主键
      * @return ${functionName}
      */
-    public PageInfo<${ClassName}> select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}, Integer pageNum, Integer pageSize);
+    public ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
 
     /**
      * 查询${functionName}列表
@@ -25,6 +26,15 @@ public interface I${ClassName}Service
      * @param ${className} ${functionName}
      * @return ${functionName}集合
      */
+    public PageInfo<${ClassName}> select${ClassName}List(${ClassName} ${className}, Integer pageNum, Integer pageSize);
+
+    /**
+     * 查询${functionName}列表
+     *
+     * @param ${className} ${functionName}
+     * @return ${functionName}
+     */
+    @Override
     public List<${ClassName}> select${ClassName}List(${ClassName} ${className});
 
     /**
@@ -46,10 +56,18 @@ public interface I${ClassName}Service
     /**
      * 批量删除${functionName}
      * 
-     * @param ${pkColumn.javaField}s 需要删除的${functionName}主键集合
+     * @param ${pkColumn.javaField}List 需要删除的${functionName}主键集合
      * @return 结果
      */
     public int delete${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List);
+
+    /**
+     * 批量查询${functionName}
+     *
+     * @param ${pkColumn.javaField}List 需要查询的数据主键集合
+     * @return 结果
+     */
+    public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List);
 
     /**
      * 删除${functionName}信息

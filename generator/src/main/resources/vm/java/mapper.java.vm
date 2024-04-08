@@ -61,7 +61,7 @@ public interface ${ClassName}Mapper
     /**
      * 批量删除${functionName}
      * 
-     * @param ${pkColumn.javaField}s 需要删除的数据主键集合
+     * @param ${pkColumn.javaField}List 需要删除的数据主键集合
      * @return 结果
      */
     public int delete${ClassName}By${pkColumn.capJavaField}List(@Param("${pkColumn.javaField}List") List<${pkColumn.javaType}> ${pkColumn.javaField}List);
@@ -69,10 +69,10 @@ public interface ${ClassName}Mapper
     /**
      * 批量查询${functionName}
      *
-     * @param ${pkColumn.javaField}s 需要查询的数据主键集合
+     * @param ${pkColumn.javaField}List 需要查询的数据主键集合
      * @return 结果
      */
-    public int select${ClassName}By${pkColumn.capJavaField}List(@Param("${pkColumn.javaField}List") List<${pkColumn.javaType}> ${pkColumn.javaField}List);
+    public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(@Param("${pkColumn.javaField}List") List<${pkColumn.javaType}> ${pkColumn.javaField}List);
 
 
     /**
