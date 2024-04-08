@@ -211,7 +211,7 @@ public class JsonResult<T> implements Serializable {
         return data;
     }
 
-    public void getData(T data) {
+    public void setData(T data) {
         this.data = data;
     }
 
