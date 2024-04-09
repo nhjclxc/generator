@@ -34,7 +34,6 @@ public interface I${ClassName}Service
      * @param ${className} ${functionName}
      * @return ${functionName}
      */
-    @Override
     public List<${ClassName}> select${ClassName}List(${ClassName} ${className});
 
     /**

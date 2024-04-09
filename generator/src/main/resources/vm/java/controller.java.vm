@@ -28,7 +28,7 @@ import io.swagger.annotations.ApiResponse;
  * @date ${datetime}
  */
 @RestController
-@RequestMapping("/${moduleName}/${businessName}")
+@RequestMapping("/${businessName}")
 #if(${enableSwagger})
 @Api(tags = "${ClassName}Controller", description = "${functionName}管理")
 #end

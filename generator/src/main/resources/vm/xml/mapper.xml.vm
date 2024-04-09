@@ -4,14 +4,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="${packageName}.mapper.${ClassName}Mapper">
     
-    <resultMap type="${ClassName}" id="${ClassName}Result">
+    <resultMap type="${packageName}.domain.${ClassName}" id="${ClassName}Result">
 #foreach ($column in $columns)
         <result property="${column.javaField}"    column="${column.columnName}"    />
 #end
     </resultMap>
 #if($table.sub)
 
-    <resultMap id="${ClassName}${subClassName}Result" type="${ClassName}" extends="${ClassName}Result">
+    <resultMap id="${ClassName}${subClassName}Result" type="${packageName}.domain.${ClassName}" extends="${ClassName}Result">
         <collection property="${subclassName}List" notNullColumn="sub_${subTable.pkColumn.columnName}" javaType="java.util.List" resultMap="${subClassName}Result" />
     </resultMap>
 
@@ -73,7 +73,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </select>
 
 
-    <insert id="insert${ClassName}" parameterType="${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
+    <insert id="insert${ClassName}" parameterType="${packageName}.domain.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
         insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">
 #foreach($column in $columns)
@@ -91,7 +91,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <update id="update${ClassName}" parameterType="${ClassName}">
+    <update id="update${ClassName}" parameterType="${packageName}.domain.${ClassName}">
         update ${tableName}
         <trim prefix="SET" suffixOverrides=",">
 #foreach($column in $columns)
@@ -109,7 +109,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <delete id="delete${ClassName}By${pkColumn.capJavaField}List" parameterType="${pkColumn.javaType}">
         delete from ${tableName} where ${pkColumn.columnName} in 
-        <foreach item="${pkColumn.javaField}" collection="array" open="(" separator="," close=")">
+        <foreach item="${pkColumn.javaField}" collection="idList" open="(" separator="," close=")">
             #{${pkColumn.javaField}}
         </foreach>
     </delete>
@@ -122,7 +122,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </select>
 
-    <insert id="insertBatch" parameterType="${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
+    <insert id="insertBatch" parameterType="${packageName}.domain.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
         insert into ${tableName}
         (#foreach($column in $columns)
             #if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
@@ -145,7 +145,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     
     <delete id="delete${subClassName}By${subTableFkClassName}s" parameterType="String">
         delete from ${subTableName} where ${subTableFkName} in 
-        <foreach item="${subTableFkclassName}" collection="array" open="(" separator="," close=")">
+        <foreach item="${subTableFkclassName}" collection="idList" open="(" separator="," close=")">
             #{${subTableFkclassName}}
         </foreach>
     </delete>
