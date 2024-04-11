@@ -134,7 +134,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <foreach collection="${className}List" separator="," index="index" item="${className}">
             (#foreach($column in $columns)
             #if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
-                #{$column.javaField}#if($foreach.count != $columns.size()), #end
+                #{${className}.$column.javaField}#if($foreach.count != $columns.size()), #end
             #end
             #end
             )

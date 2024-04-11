@@ -104,7 +104,7 @@ public class GenConstants
     public static final String TYPE_BIGDECIMAL = "BigDecimal";
 
     /** 时间类型 */
-    public static final String TYPE_DATE = "Date";
+    public static final String TYPE_DATE = "LocalDateTime";
 
     /** 模糊查询 */
     public static final String QUERY_LIKE = "LIKE";
