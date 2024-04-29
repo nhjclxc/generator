@@ -105,7 +105,7 @@
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
         <!-- 批量生成代码按钮 -->
-        <el-button 
+        <el-button
           type="primary"
           plain
           icon="el-icon-download"
@@ -113,7 +113,7 @@
           :disabled="multiple"
           @click="handleGenTable"
         >批量生成代码</el-button>
-        
+
         <el-button type="success" @click="handleConnect">连接数据库</el-button>
 
       </el-form-item>
@@ -175,7 +175,7 @@
 
     <!-- 分页插件 -->
     <el-pagination
-        align="right" 
+        align="right"
         style="margin-right: 5%;"
         :current-page.sync="queryParams.pageNum"
         :page-sizes="[10,20,30,50]"
@@ -245,9 +245,9 @@ export default {
         tableComment: '',
         author: '',
         packageName: 'com.example',
-        jdbcUrl: 'jdbc:mysql://127.0.0.1:3306/test',  // 后端项目里面配置文件的数据库地址
+        jdbcUrl: 'jdbc:mysql://rm-bp1j0xlvvp7f274318o.mysql.rds.aliyuncs.com:3306/smart_construction_dev',  // 后端项目里面配置文件的数据库地址
         username: 'root',
-        password: 'root123',
+        password: '',
         enableLombok: true,
         enableSwagger: true,
         changeEnableVue3: false,
@@ -361,7 +361,7 @@ export default {
     },
     /** 预览按钮 */
     handlePreview(row) {
-      
+
       previewTable({
         'enableLombok': this.queryParams.enableLombok,
         'enableSwagger': this.queryParams.enableSwagger,

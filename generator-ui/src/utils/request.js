@@ -56,7 +56,6 @@ service.interceptors.response.use(res => {
     // 获取错误信息
     const msg = errorCode[code] || res.data.msg || errorCode['default']
 
-
     if (code < 200 || code > 300){
       // console.log('接口异常');
       Message({ message: msg, type: 'error' })

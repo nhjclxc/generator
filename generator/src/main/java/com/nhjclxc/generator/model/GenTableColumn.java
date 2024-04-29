@@ -18,7 +18,7 @@ import java.util.Map;
 
 /**
  * 代码生成业务字段表 gen_table_column
- * 
+ *
  * @author LuoXianchao
  */
 @Data
@@ -192,16 +192,7 @@ public class GenTableColumn  implements Serializable {
 
     public boolean isSuperColumn()
     {
-        return isSuperColumn(this.javaField);
-    }
-
-    public static boolean isSuperColumn(String javaField)
-    {
-        return StringUtils.equalsAnyIgnoreCase(javaField,
-                // BaseEntity
-                "createBy", "createTime", "updateBy", "updateTime", "remark",
-                // TreeEntity
-                "parentName", "parentId", "orderNum", "ancestors");
+        return false;
     }
 
     public boolean isUsableColumn()

@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiResponse;
 
 /**
  * ${functionName}Controller
- * 
+ *
  * @author ${author}
  * @date ${datetime}
  */
