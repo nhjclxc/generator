@@ -8,14 +8,8 @@
 </template>
 
 <script>
-// 执行配置文件
-import _ from '../config'
-
 
 import Generator from './viwes/generator.vue'
-
-console.log('window.GENERATOR_CONFIG', window.GENERATOR_CONFIG);
-console.log('window.GENERATOR_CONFIG.baseURL', window.GENERATOR_CONFIG.baseURL);
 
 export default {
   name: 'App',

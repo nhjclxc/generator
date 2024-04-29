@@ -18,8 +18,7 @@ import ${packageName}.service.I${ClassName}Service;
  * @date ${datetime}
  */
 @Service
-public class ${ClassName}ServiceImpl implements I${ClassName}Service
-{
+public class ${ClassName}ServiceImpl implements I${ClassName}Service {
     @Autowired
     private ${ClassName}Mapper ${className}Mapper;
 
@@ -30,8 +29,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return ${functionName}
      */
     @Override
-    public ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
-    {
+    public ${ClassName} select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}) {
         return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
     }
 
@@ -42,8 +40,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return ${functionName}
      */
     @Override
-    public PageInfo<${ClassName}> select${ClassName}List(${ClassName} ${className}, Integer pageNum, Integer pageSize)
-    {
+    public PageInfo<${ClassName}> select${ClassName}List(${ClassName} ${className}, Integer pageNum, Integer pageSize) {
         pageNum = Optional.ofNullable(pageNum).orElse(1);
         pageSize = Optional.ofNullable(pageSize).orElse(10);
         return PageHelper.startPage(pageNum, pageSize)
@@ -57,8 +54,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return ${functionName}
      */
     @Override
-    public List<${ClassName}> select${ClassName}List(${ClassName} ${className})
-    {
+    public List<${ClassName}> select${ClassName}List(${ClassName} ${className}) {
         return ${className}Mapper.select${ClassName}List(${className});
     }
 
@@ -69,8 +65,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return 结果
      */
     @Override
-    public int insert${ClassName}(${ClassName} ${className})
-    {
+    public int insert${ClassName}(${ClassName} ${className}) {
         return ${className}Mapper.insert${ClassName}(${className});
     }
 
@@ -81,8 +76,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return 结果
      */
     @Override
-    public int update${ClassName}(${ClassName} ${className})
-    {
+    public int update${ClassName}(${ClassName} ${className}) {
         return ${className}Mapper.update${ClassName}(${className});
     }
 
@@ -93,8 +87,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return 结果
      */
     @Override
-    public int delete${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List)
-    {
+    public int delete${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List) {
         return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List);
     }
 
@@ -104,8 +97,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @param ${pkColumn.javaField}List 需要查询的数据主键集合
      * @return 结果
      */
-    public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List)
-    {
+    public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List) {
         return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List);
     }
 
@@ -118,8 +110,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service
      * @return 结果
      */
     @Override
-    public int delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField})
-    {
+    public int delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField}) {
         return ${className}Mapper.delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField});
     }
 

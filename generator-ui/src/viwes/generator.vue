@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
       <!-- 搜索表单相关 -->
-    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" :inline-message="true" label-width="68px">
+    <el-form :model="queryParams" ref="queryForm" :rules="rules" size="small" :inline="true" :inline-message="true" label-width="68px">
       <!-- 数据库相关配置 -->
       <div style="width: 100%;">
         <el-form-item label="jdbcUrl" prop="jdbcUrl"  type="flex" justify="start" >
@@ -33,11 +33,11 @@
         />
       </el-form-item>
       </div>
-      
+
       <!-- 生成代码相关配置 -->
       <div style="width: 100%;">
         <el-form-item label="package" prop="package">
-          <el-input 
+          <el-input
             v-model="queryParams.packageName"
             placeholder="包名"
             clearable
@@ -247,7 +247,7 @@ export default {
         packageName: 'com.example',
         jdbcUrl: 'jdbc:mysql://rm-bp1j0xlvvp7f274318o.mysql.rds.aliyuncs.com:3306/smart_construction_dev',  // 后端项目里面配置文件的数据库地址
         username: 'root',
-        password: '',
+        password: null,
         enableLombok: true,
         enableSwagger: true,
         changeEnableVue3: false,
@@ -258,6 +258,11 @@ export default {
         title: "代码预览",
         data: {},
         activeName: "domain.java"
+      },
+      rules: {
+        jdbcUrl: [{ required: true, message: '数据库地址不能为空', trigger: 'blur' }],
+        username: [{ required: true, message: '数据库用户不能为空', trigger: 'blur' }],
+        password: [{ required: true, message: '数据库密码不能为空', trigger: 'blur' }],
       }
     };
   },
@@ -265,7 +270,7 @@ export default {
     // this.getList();
   },
   activated() {
-    this.getList();
+    // this.getList();
   },
   methods: {
     handleSizeChange(val){
@@ -288,7 +293,7 @@ export default {
     /** 查询表集合 */
     getList() {
       this.loading = true;
-      
+
       listTable({
         'pageNum': this.queryParams.pageNum,
         'pageSize': this.queryParams.pageSize,
@@ -298,6 +303,7 @@ export default {
           this.tableList = response.list;
           this.total = response.total;
           this.loading = false;
+          Message({ message: msg, type: 'success' })
         }
       ).catch(err => {
         this.loading = false;

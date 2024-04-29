@@ -22,7 +22,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 #end
 
-    <sql id="{ClassName}BaseColumn">
+    <sql id="${ClassName}BaseColumn">
         #foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
     </sql>
 

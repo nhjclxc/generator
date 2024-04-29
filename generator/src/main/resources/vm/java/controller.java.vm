@@ -32,8 +32,7 @@ import io.swagger.annotations.ApiResponse;
 #if(${enableSwagger})
 @Api(tags = "${ClassName}Controller", description = "${functionName}管理")
 #end
-public class ${ClassName}Controller
-{
+public class ${ClassName}Controller {
     @Autowired
     private I${ClassName}Service ${className}Service;
 
@@ -45,8 +44,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
     @GetMapping("/list")
-    public JsonResult<PageInfo<${ClassName}>> list(${ClassName} ${className}, Integer pageNum, Integer pageSize)
-    {
+    public JsonResult<PageInfo<${ClassName}>> list(${ClassName} ${className}, Integer pageNum, Integer pageSize) {
         PageInfo<${ClassName}> pageInfo = ${className}Service.select${ClassName}List(${className}, pageNum, pageSize);
         return JsonResult.success(pageInfo);
     }
@@ -59,8 +57,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
     @PostMapping("/export")
-    public void export(HttpServletResponse response, ${ClassName} ${className})
-    {
+    public void export(HttpServletResponse response, ${ClassName} ${className}) {
         List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
         // 实现导出
     }
@@ -73,8 +70,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
     @GetMapping(value = "/{${pkColumn.javaField}}")
-    public JsonResult<${ClassName}> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField})
-    {
+    public JsonResult<${ClassName}> getInfo(@PathVariable("${pkColumn.javaField}") ${pkColumn.javaType} ${pkColumn.javaField}) {
         return JsonResult.success(${className}Service.select${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField}));
     }
 
@@ -86,8 +82,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
     @PostMapping
-    public JsonResult<Object> add(@RequestBody ${ClassName} ${className})
-    {
+    public JsonResult<Object> add(@RequestBody ${ClassName} ${className}) {
         return JsonResult.success(${className}Service.insert${ClassName}(${className}));
     }
 
@@ -99,8 +94,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
     @PutMapping
-    public JsonResult<Object> edit(@RequestBody ${ClassName} ${className})
-    {
+    public JsonResult<Object> edit(@RequestBody ${ClassName} ${className}) {
         return JsonResult.success(${className}Service.update${ClassName}(${className}));
     }
 
@@ -112,8 +106,7 @@ public class ${ClassName}Controller
     @ApiResponse(code = 200, message = "success")
     #end
 	@DeleteMapping("/{${pkColumn.javaField}List}")
-    public JsonResult<Object> remove(@PathVariable List<${pkColumn.javaType}> ${pkColumn.javaField}List)
-    {
+    public JsonResult<Object> remove(@PathVariable List<${pkColumn.javaType}> ${pkColumn.javaField}List) {
         return JsonResult.success(${className}Service.delete${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List));
     }
 }

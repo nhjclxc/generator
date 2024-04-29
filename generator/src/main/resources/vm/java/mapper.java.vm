@@ -16,8 +16,7 @@ import java.util.List;
  * @date ${datetime}
  */
 @Mapper
-public interface ${ClassName}Mapper
-{
+public interface ${ClassName}Mapper {
     /**
      * 查询${functionName}
      *
