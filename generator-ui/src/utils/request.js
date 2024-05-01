@@ -33,7 +33,7 @@ service.interceptors.request.use(config => {
 
   // 所有请求添加Authorization头，connect添加是为了，删除上一个连接
   const sessionUuid = sessionStorage.getItem(Authorization)
-  config.headers['Authorization'] = sessionUuid
+  config.headers['Authorization'] = sessionUuid || 'Authorization'
 
   return config
 }, error => {

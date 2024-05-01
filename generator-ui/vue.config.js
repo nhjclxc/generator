@@ -5,6 +5,6 @@ module.exports = defineConfig({
   // 关闭eslint校验
   lintOnSave: false,
   devServer: {
-    port: 9098, // 前端页面访问端口
+    port: 8098, // 前端页面访问端口
   },
 })
