@@ -305,13 +305,13 @@ public class GeneratorService {
 		{
 			// 渲染模板
 			StringWriter sw = new StringWriter();
-			Template tpl = Velocity.getTemplate(template, Constants.UTF8);
+			Template tpl = Velocity.getTemplate(template, "UTF-8");
 			tpl.merge(context, sw);
 			try
 			{
 				// 添加到zip
 				zip.putNextEntry(new ZipEntry(VelocityUtils.getFileName(template, table)));
-				IOUtils.write(sw.toString(), zip, Constants.UTF8);
+				IOUtils.write(sw.toString(), zip, "UTF-8");
 				IOUtils.closeQuietly(sw);
 				zip.flush();
 				zip.closeEntry();
@@ -388,7 +388,7 @@ public class GeneratorService {
 		{
 			// 渲染模板
 			StringWriter sw = new StringWriter();
-			Template tpl = Velocity.getTemplate(template, Constants.UTF8);
+			Template tpl = Velocity.getTemplate(template, "UTF-8");
 			tpl.merge(context, sw);
 			dataMap.put(template, sw.toString());
 		}

@@ -1,14 +1,12 @@
 package ${packageName}.mapper;
 
-import ${packageName}.domain.${ClassName};
-#if($table.sub)
-import ${packageName}.domain.${subClassName};
-#end
+import ${packageName}.model.${ClassName};
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+
 /**
  * ${functionName}Mapper接口
  *
@@ -17,6 +15,7 @@ import java.util.List;
  */
 @Mapper
 public interface ${ClassName}Mapper {
+
     /**
      * 查询${functionName}
      *
@@ -39,7 +38,7 @@ public interface ${ClassName}Mapper {
      * @param ${className} ${functionName}
      * @return 结果
      */
-    public int insert${ClassName}(${ClassName} ${className});
+    public int insert${ClassName}Selective(${ClassName} ${className});
 
     /**
      * 修改${functionName}
@@ -47,7 +46,7 @@ public interface ${ClassName}Mapper {
      * @param ${className} ${functionName}
      * @return 结果
      */
-    public int update${ClassName}(${ClassName} ${className});
+    public int update${ClassName}SelectiveByPrimaryKey(${ClassName} ${className});
 
     /**
      * 删除${functionName}
@@ -73,7 +72,6 @@ public interface ${ClassName}Mapper {
      */
     public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(@Param("${pkColumn.javaField}List") List<${pkColumn.javaType}> ${pkColumn.javaField}List);
 
-
     /**
      * 批量新增${functionName}
      *
@@ -82,32 +80,12 @@ public interface ${ClassName}Mapper {
      */
     public int insertBatch(@Param("${className}List") List<${ClassName}> ${className}List);
 
-
-#if($table.sub)
-
     /**
-     * 批量删除${subTable.functionName}
+     * 批量修改${functionName}
      *
-     * @param ${pkColumn.javaField}s 需要删除的数据主键集合
-     * @return 结果
+     * @param ${className}List 批量新增数据的${functionName}
+     * @return 修改条目数
      */
-    public int delete${subClassName}By${subTableFkClassName}List(${pkColumn.javaType}[] ${pkColumn.javaField}s);
+    public int updateBatch(@Param("${className}List") List<${ClassName}> ${className}List);
 
-    /**
-     * 批量新增${subTable.functionName}
-     *
-     * @param ${subclassName}List ${subTable.functionName}列表
-     * @return 结果
-     */
-    public int batch${subClassName}(List<${subClassName}> ${subclassName}List);
-
-
-    /**
-     * 通过${functionName}主键删除${subTable.functionName}信息
-     *
-     * @param ${pkColumn.javaField} ${functionName}ID
-     * @return 结果
-     */
-    public int delete${subClassName}By${subTableFkClassName}(${pkColumn.javaType} ${pkColumn.javaField});
-#end
 }

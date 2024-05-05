@@ -245,7 +245,7 @@ export default {
         tableComment: '',
         author: '',
         packageName: 'com.example',
-        jdbcUrl: 'jdbc:mysql://rm-bp1j0xlvvp7f274318o.mysql.rds.aliyuncs.com:3306/smart_construction_dev',  // 后端项目里面配置文件的数据库地址
+        jdbcUrl: 'jdbc:mysql://127.0.0.1:3306/test',  // 后端项目里面配置文件的数据库地址
         username: 'root',
         password: null,
         enableLombok: true,

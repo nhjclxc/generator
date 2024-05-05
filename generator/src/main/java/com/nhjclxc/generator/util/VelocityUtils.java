@@ -15,16 +15,13 @@ import java.util.Set;
 
 /**
  * 模板处理工具类
- * 
+ *
  * @author LuoXianchao
  */
 public class VelocityUtils
 {
     /** 项目空间路径 */
     private static final String PROJECT_PATH = "main/java";
-
-    /** mybatis空间路径 */
-    private static final String MYBATIS_PATH = "main/resources/mapper";
 
     /** 默认上级菜单，系统工具 */
     private static final String DEFAULT_PARENT_MENU_ID = "3";
@@ -136,7 +133,7 @@ public class VelocityUtils
             useWebType = "vm/vue/v3";
         }
         List<String> templates = new ArrayList<String>();
-        templates.add("vm/java/domain.java.vm");
+        templates.add("vm/java/model.java.vm");
         templates.add("vm/java/mapper.java.vm");
         templates.add("vm/java/service.java.vm");
         templates.add("vm/java/serviceImpl.java.vm");
@@ -178,12 +175,11 @@ public class VelocityUtils
         String tableName = genTable.getTableName();
 
         String javaPath = PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
-        String mybatisPath = MYBATIS_PATH + "/" + moduleName;
         String vuePath = "vue";
 
-        if (template.contains("domain.java.vm"))
+        if (template.contains("model.java.vm"))
         {
-            fileName = StringUtils.format("{}/domain/{}.java", javaPath, className);
+            fileName = StringUtils.format("{}/model/{}.java", javaPath, className);
         }
         if (template.contains("mapper.java.vm"))
         {
@@ -203,7 +199,7 @@ public class VelocityUtils
         }
         else if (template.contains("mapper.xml.vm"))
         {
-            fileName = StringUtils.format("{}/{}Mapper.xml", mybatisPath, className);
+            fileName = StringUtils.format("{}/mapper/{}Mapper.xml", javaPath, className);
         }
         else if (template.contains("sql.vm"))
         {
@@ -238,7 +234,7 @@ public class VelocityUtils
 
     /**
      * 根据列类型获取导入包
-     * 
+     *
      * @param genTable 业务表对象
      * @return 返回需要导入的包列表
      */
@@ -268,7 +264,7 @@ public class VelocityUtils
 
     /**
      * 根据列类型获取字典组
-     * 
+     *
      * @param genTable 业务表对象
      * @return 返回字典组
      */
@@ -287,7 +283,7 @@ public class VelocityUtils
 
     /**
      * 添加字典列表
-     * 
+     *
      * @param dicts 字典列表
      * @param columns 列集合
      */

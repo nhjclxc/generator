@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import ${packageName}.mapper.${ClassName}Mapper;
-import ${packageName}.domain.${ClassName};
+import ${packageName}.model.${ClassName};
 import ${packageName}.service.I${ClassName}Service;
 
 /**
@@ -19,6 +19,7 @@ import ${packageName}.service.I${ClassName}Service;
  */
 @Service
 public class ${ClassName}ServiceImpl implements I${ClassName}Service {
+
     @Autowired
     private ${ClassName}Mapper ${className}Mapper;
 
@@ -66,7 +67,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      */
     @Override
     public int insert${ClassName}(${ClassName} ${className}) {
-        return ${className}Mapper.insert${ClassName}(${className});
+        return ${className}Mapper.insert${ClassName}Selective(${className});
     }
 
     /**
@@ -77,7 +78,7 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
      */
     @Override
     public int update${ClassName}(${ClassName} ${className}) {
-        return ${className}Mapper.update${ClassName}(${className});
+        return ${className}Mapper.update${ClassName}SelectiveByPrimaryKey(${className});
     }
 
     /**
@@ -100,8 +101,6 @@ public class ${ClassName}ServiceImpl implements I${ClassName}Service {
     public List<${ClassName}> select${ClassName}By${pkColumn.capJavaField}List(List<${pkColumn.javaType}> ${pkColumn.javaField}List) {
         return ${className}Mapper.select${ClassName}By${pkColumn.capJavaField}List(${pkColumn.javaField}List);
     }
-
-
 
     /**
      * 删除${functionName}信息

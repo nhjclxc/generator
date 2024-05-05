@@ -2,7 +2,7 @@ package ${packageName}.service;
 
 import java.util.List;
 import com.github.pagehelper.PageInfo;
-import ${packageName}.domain.${ClassName};
+import ${packageName}.model.${ClassName};
 
 /**
  * ${functionName}Service接口
@@ -11,6 +11,7 @@ import ${packageName}.domain.${ClassName};
  * @date ${datetime}
  */
 public interface I${ClassName}Service {
+
     /**
      * 查询${functionName}
      *
@@ -74,4 +75,5 @@ public interface I${ClassName}Service {
      * @return 结果
      */
     public int delete${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaType} ${pkColumn.javaField});
+
 }

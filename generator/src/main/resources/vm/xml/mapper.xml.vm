@@ -4,26 +4,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="${packageName}.mapper.${ClassName}Mapper">
 
-    <resultMap type="${packageName}.domain.${ClassName}" id="${ClassName}Result">
+    <resultMap type="${packageName}.model.${ClassName}" id="${ClassName}Result">
 #foreach ($column in $columns)
         <result property="${column.javaField}"    column="${column.columnName}"    />
 #end
     </resultMap>
-#if($table.sub)
-
-    <resultMap id="${ClassName}${subClassName}Result" type="${packageName}.domain.${ClassName}" extends="${ClassName}Result">
-        <collection property="${subclassName}List" notNullColumn="sub_${subTable.pkColumn.columnName}" javaType="java.util.List" resultMap="${subClassName}Result" />
-    </resultMap>
-
-    <resultMap type="${subClassName}" id="${subClassName}Result">
-#foreach ($column in $subTable.columns)
-        <result property="${column.javaField}"    column="sub_${column.columnName}"    />
-#end
-    </resultMap>
-#end
 
     <sql id="${ClassName}BaseColumn">
-        #foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
+         #foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
+
     </sql>
 
     <sql id="select${ClassName}Vo">
@@ -62,22 +51,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
-    <select id="select${ClassName}By${pkColumn.capJavaField}" parameterType="${pkColumn.javaType}" resultMap="#if($table.sub)${ClassName}${subClassName}Result#else${ClassName}Result#end">
-#if($table.crud || $table.tree)
+    <select id="select${ClassName}By${pkColumn.capJavaField}" parameterType="${pkColumn.javaType}" resultMap="${ClassName}Result">
         <include refid="select${ClassName}Vo"/>
         where ${pkColumn.columnName} = #{${pkColumn.javaField}}
-#elseif($table.sub)
-        select#foreach($column in $columns) a.$column.columnName#if($foreach.count != $columns.size()),#end#end,
-           #foreach($column in $subTable.columns) b.$column.columnName as sub_$column.columnName#if($foreach.count != $subTable.columns.size()),#end#end
-
-        from ${tableName} a
-        left join ${subTableName} b on b.${subTableFkName} = a.${pkColumn.columnName}
-        where a.${pkColumn.columnName} = #{${pkColumn.javaField}}
-#end
     </select>
 
-
-    <insert id="insert${ClassName}" parameterType="${packageName}.domain.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
+    <insert id="insert${ClassName}Selective" parameterType="${packageName}.model.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
         insert into ${tableName}
         <trim prefix="(" suffix=")" suffixOverrides=",">
 #foreach($column in $columns)
@@ -95,7 +74,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
-    <update id="update${ClassName}" parameterType="${packageName}.domain.${ClassName}">
+    <update id="update${ClassName}SelectiveByPrimaryKey" parameterType="${packageName}.model.${ClassName}">
         update ${tableName}
         <trim prefix="SET" suffixOverrides=",">
 #foreach($column in $columns)
@@ -126,43 +105,37 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </select>
 
-    <insert id="insertBatch" parameterType="${packageName}.domain.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
+    <insert id="insertBatch" parameterType="${packageName}.model.${ClassName}"#if($pkColumn.increment) useGeneratedKeys="true" keyProperty="$pkColumn.javaField"#end>
         insert into ${tableName}
-        (#foreach($column in $columns)
-            #if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
-                $column.columnName#if($foreach.count != $columns.size()), #end
-            #end
-        #end
+        (
+    #foreach($column in $columns)
+        #if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
+            $column.columnName#if($foreach.count != $columns.size()), #end
+    #end#end
         )
         values
         <foreach collection="${className}List" separator="," index="index" item="${className}">
-            (#foreach($column in $columns)
+            (
+        #foreach($column in $columns)
             #if($column.columnName != $pkColumn.columnName || !$pkColumn.increment)
                 #{${className}.$column.javaField}#if($foreach.count != $columns.size()), #end
-            #end
-            #end
+        #end#end
             )
         </foreach>
     </insert>
 
-#if($table.sub)
-
-    <delete id="delete${subClassName}By${subTableFkClassName}s" parameterType="String">
-        delete from ${subTableName} where ${subTableFkName} in
-        <foreach item="${subTableFkclassName}" collection="idList" open="(" separator="," close=")">
-            #{${subTableFkclassName}}
+    <update id="updateBatch" parameterType="${packageName}.model.${ClassName}">
+        <foreach collection="${className}List" item="${className}" index="index" separator=";">
+            update ${tableName}
+            <trim prefix="SET" suffixOverrides=",">
+        #foreach($column in $columns)
+            #if($column.columnName != $pkColumn.columnName)
+                <if test="$column.javaField != null#if($column.javaType == 'String' && $column.required) and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
+            #end
+        #end
+            </trim>
+            where ${pkColumn.columnName} = #{${pkColumn.javaField}}
         </foreach>
-    </delete>
+    </update>
 
-    <delete id="delete${subClassName}By${subTableFkClassName}" parameterType="${pkColumn.javaType}">
-        delete from ${subTableName} where ${subTableFkName} = #{${subTableFkclassName}}
-    </delete>
-
-    <insert id="batch${subClassName}">
-        insert into ${subTableName}(#foreach($column in $subTable.columns) $column.columnName#if($foreach.count != $subTable.columns.size()),#end#end) values
-		<foreach item="item" index="index" collection="list" separator=",">
-            (#foreach($column in $subTable.columns) #{item.$column.javaField}#if($foreach.count != $subTable.columns.size()),#end#end)
-        </foreach>
-    </insert>
-#end
 </mapper>
