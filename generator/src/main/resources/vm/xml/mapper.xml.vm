@@ -92,7 +92,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <delete id="delete${ClassName}By${pkColumn.capJavaField}List" parameterType="${pkColumn.javaType}">
         delete from ${tableName} where ${pkColumn.columnName} in
-        <foreach item="${pkColumn.javaField}" collection="idList" open="(" separator="," close=")">
+        <foreach collection="${pkColumn.javaField}List" item="${pkColumn.javaField}" open="(" separator="," close=")">
             #{${pkColumn.javaField}}
         </foreach>
     </delete>

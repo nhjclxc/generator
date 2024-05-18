@@ -1,9 +1,13 @@
 package ${packageName}.controller;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import com.github.pagehelper.PageInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,14 +32,28 @@ import io.swagger.annotations.ApiResponse;
  * @date ${datetime}
  */
 @RestController
+@NoArgsConstructor
+@AllArgsConstructor
 @RequestMapping("/${businessName}")
 #if(${enableSwagger})
 @Api(tags = "${ClassName}Controller", description = "${functionName}控制器")
 #end
 public class ${ClassName}Controller {
 
-    @Autowired
     private I${ClassName}Service ${className}Service;
+
+    /**
+     * 分页查询${functionName}列表
+     */
+    #if(${enableSwagger})
+    @ApiOperation(value = "分页查询${functionName}列表")
+    @ApiResponse(code = 200, message = "success")
+    #end
+    @GetMapping("/listPage")
+    public JsonResult<PageInfo<${ClassName}>> listPage(${ClassName} ${className}, Integer pageNum, Integer pageSize) {
+        PageInfo<${ClassName}> pageInfo = ${className}Service.select${ClassName}List(${className}, pageNum, pageSize);
+        return JsonResult.success(pageInfo);
+    }
 
     /**
      * 查询${functionName}列表
@@ -45,9 +63,8 @@ public class ${ClassName}Controller {
     @ApiResponse(code = 200, message = "success")
     #end
     @GetMapping("/list")
-    public JsonResult<PageInfo<${ClassName}>> list(${ClassName} ${className}, Integer pageNum, Integer pageSize) {
-        PageInfo<${ClassName}> pageInfo = ${className}Service.select${ClassName}List(${className}, pageNum, pageSize);
-        return JsonResult.success(pageInfo);
+    public JsonResult<List<${ClassName}>> list(${ClassName} ${className}) {
+        return JsonResult.success(${className}Service.select${ClassName}List(${className}));
     }
 
     /**
@@ -78,7 +95,7 @@ public class ${ClassName}Controller {
      * 修改${functionName}
      */
     #if(${enableSwagger})
-    @ApiOperation(value = "新增修改${functionName}")
+    @ApiOperation(value = "修改${functionName}")
     @ApiResponse(code = 200, message = "success")
     #end
     @PutMapping
@@ -106,13 +123,13 @@ public class ${ClassName}Controller {
     @ApiResponse(code = 200, message = "success")
     #end
     @GetMapping("/export")
-    public void export(HttpServletResponse response, ${ClassName} ${className}) {
+    public void export(HttpServletResponse response, ${ClassName} ${className}) throws IOException {
         setResponse(response, "导出${functionName}列表_" + System.currentTimeMillis() + ".xlsx");
         List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
 
     }
 
-    private void setResponse(HttpServletResponse response, String fileName) throws IOException {
+    private static void setResponse(HttpServletResponse response, String fileName) throws IOException {
         response.addHeader("Access-Control-Allow-Origin", "*");
         response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
         response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
