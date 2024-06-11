@@ -11,12 +11,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="${ClassName}BaseColumn">
-         #foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
+            #foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
 
     </sql>
 
     <sql id="select${ClassName}Vo">
-        select#foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end from ${tableName}
+        select#foreach($column in $columns) $column.columnName#if($foreach.count != $columns.size()),#end#end
+        from ${tableName}
     </sql>
 
     <select id="select${ClassName}List" parameterType="${ClassName}" resultMap="${ClassName}Result">
@@ -130,11 +131,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <trim prefix="SET" suffixOverrides=",">
         #foreach($column in $columns)
             #if($column.columnName != $pkColumn.columnName)
-                <if test="$column.javaField != null#if($column.javaType == 'String' && $column.required) and $column.javaField != ''#end">$column.columnName = #{$column.javaField},</if>
+                <if test="${className}.$column.javaField != null#if($column.javaType == 'String' && $column.required) and ${className}.$column.javaField != ''#end">$column.columnName = #{${className}.$column.javaField},</if>
             #end
         #end
             </trim>
-            where ${pkColumn.columnName} = #{${pkColumn.javaField}}
+            where ${pkColumn.columnName} = #{${className}.${pkColumn.javaField}}
         </foreach>
     </update>
 
