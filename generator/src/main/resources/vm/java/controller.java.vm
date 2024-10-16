@@ -1,15 +1,10 @@
 package ${packageName}.controller;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import com.github.pagehelper.PageInfo;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,16 +29,14 @@ import io.swagger.annotations.ApiResponse;
  * @date ${datetime}
  */
 @RestController
-@NoArgsConstructor
-@AllArgsConstructor
-@RequiredArgsConstructor(onConstructor = @__(@Lazy))
 @RequestMapping("/${businessName}")
 #if(${enableSwagger})
 @Api(tags = "${ClassName}Controller", description = "${functionName}控制器")
 #end
 public class ${ClassName}Controller {
 
-    private final I${ClassName}Service ${className}Service;
+    @Autowired
+    private I${ClassName}Service ${className}Service;
 
     /**
      * 分页查询${functionName}列表
@@ -130,12 +123,7 @@ public class ${ClassName}Controller {
         setResponse(response, "导出${functionName}列表_" + System.currentTimeMillis() + ".xlsx");
         List<${ClassName}> list = ${className}Service.select${ClassName}List(${className});
 
+        //导出实现参照 https://github.com/nhjclxc/excel-test
     }
 
-    private static void setResponse(HttpServletResponse response, String fileName) throws IOException {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Expose-Headers", "Content-Disposition");
-        response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8.name()));
-        response.setContentType("application/octet-stream; charset=UTF-8");
-    }
 }
