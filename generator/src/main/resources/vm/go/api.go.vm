@@ -3,10 +3,6 @@ package api
 import (
     "errors"
     "fmt"
-    "gin_generator/model"
-    commonModel "gin_generator/model/common"
-    "gin_generator/model/dto"
-    "gin_generator/service"
     "github.com/gin-gonic/gin"
     "net/http"
     "strconv"
@@ -73,9 +69,9 @@ func (this *${ClassName}Api) Update${ClassName}(c *gin.Context) {
 // @Summary 删除${functionName}-Summary
 // @Description 删除${functionName}-Description
 // @Security BearerAuth
-// @Accept param
-// @Produce param
-// @Param ${pkColumn.javaField}List param int64 true "${functionName}主键List"
+// @Accept path
+// @Produce path
+// @Param ${pkColumn.javaField}List path int64 true "${functionName}主键List"
 // @Success 200 {object} commonModel.JsonResult "删除${functionName}响应数据"
 // @Failure 401 {object} commonModel.JsonResult "未授权"
 // @Failure 500 {object} commonModel.JsonResult "服务器异常"
@@ -102,9 +98,9 @@ func (this *${ClassName}Api) Delete${ClassName}(c *gin.Context) {
 // @Summary 获取${functionName}详细信息-Summary
 // @Description 获取${functionName}详细信息-Description
 // @Security BearerAuth
-// @Accept param
-// @Produce param
-// @Param ${pkColumn.javaField} param int64 true "${functionName}主键List"
+// @Accept path
+// @Produce path
+// @Param ${pkColumn.javaField} path int64 true "${functionName}主键List"
 // @Success 200 {object} commonModel.JsonResult "获取${functionName}详细信息"
 // @Failure 401 {object} commonModel.JsonResult "未授权"
 // @Failure 500 {object} commonModel.JsonResult "服务器异常"

@@ -1,8 +1,6 @@
 package service
 
 import (
-    "gin_generator/model"
-    "gin_generator/model/dto"
     "gorm.io/gorm"
 )
 

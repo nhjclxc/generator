@@ -4,8 +4,6 @@ import (
     "encoding/json"
     "errors"
     "fmt"
-    "gin_generator/model/dto"
-    "gin_generator/model/vo"
     "gorm.io/gorm"
     "time"
     "github.com/jinzhu/copier"
@@ -298,9 +296,9 @@ func (this *${ClassName}) Get${ClassName}List(DB *gorm.DB, ${className}Dto *dto.
     #end
 #end
 
-if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
-    query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
-}
+    if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
+        query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+    }
 
     // // 添加分页逻辑
     // if ${className}Dto.PageNum > 0 && ${className}Dto.PageSize > 0 {
@@ -357,9 +355,9 @@ func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *
     #end
 #end
 
-if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
-query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
-}
+    if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
+    query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+    }
 
     // 查询总数
     if err := query.Count(&total).Error; err != nil {

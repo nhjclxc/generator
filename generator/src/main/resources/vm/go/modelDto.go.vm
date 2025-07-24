@@ -1,7 +1,6 @@
 package dto
 
 import (
-    "gin_generator/model"
 )
 
 // ${functionName}对象 ${ClassName}Dto
