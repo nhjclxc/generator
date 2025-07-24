@@ -1,0 +1,42 @@
+package router
+
+import (
+    "gin_generator/api"
+    "github.com/gin-gonic/gin"
+)
+
+// ${ClassName}Router ${functionName} 路由Router层
+type ${ClassName}Router struct {
+    ${className}Api *api.${ClassName}Api
+}
+
+// Init${ClassName}Router 初始化 ${ClassName}Router 路由
+func (this *${ClassName}Router) Init${ClassName}Router(privateRouterOrigin *gin.RouterGroup, publicRouterOrigin *gin.RouterGroup) {
+    privateRouter := privateRouterOrigin.Group("private/${businessName}")
+    {
+        // PrivateRouter 下是一些必须进行登录的接口
+        // http://localhost:8080/private
+
+        privateRouter.POST("", this.${className}Api.Insert${ClassName})         // 新增${functionName}
+        privateRouter.PUT("", this.${className}Api.Update${ClassName})          // 修改${functionName}
+        privateRouter.DELETE("", this.${className}Api.Delete${ClassName})       // 删除${functionName}
+        privateRouter.GET("/:{${pkColumn.javaField}}", this.${className}Api.Get${ClassName}By${pkColumn.capJavaField})  // 获取${functionName}详细信息
+        privateRouter.GET("/list", this.${className}Api.Get${ClassName}List)     // 查询${functionName}列表
+        privateRouter.GET("/pageList", this.${className}Api.Get${ClassName}PageList) // 分页查询${functionName}列表
+        privateRouter.GET("/export", this.${className}Api.Export${ClassName})       // 导出${functionName}列表
+    }
+
+    publicRouter := publicRouterOrigin.Group("public/${businessName}")
+    {
+        // PublicRouter 下是一些无需登录的接口，可以直接访问，无须经过授权操作
+        // http://localhost:8080/public
+
+        publicRouter.POST("", this.${className}Api.Insert${ClassName})         // 新增${functionName}
+        publicRouter.PUT("", this.${className}Api.Update${ClassName})          // 修改${functionName}
+        publicRouter.DELETE("", this.${className}Api.Delete${ClassName})       // 删除${functionName}
+        publicRouter.GET("/:{${pkColumn.javaField}}", this.${className}Api.Get${ClassName}By${pkColumn.capJavaField})  // 获取${functionName}详细信息
+        publicRouter.GET("/list", this.${className}Api.Get${ClassName}List)     // 查询${functionName}列表
+        publicRouter.GET("/pageList", this.${className}Api.Get${ClassName}PageList) // 分页查询${functionName}列表
+        publicRouter.GET("/export", this.${className}Api.Export${ClassName})       // 导出${functionName}列表
+    }
+}

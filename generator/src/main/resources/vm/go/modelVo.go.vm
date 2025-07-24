@@ -1,0 +1,14 @@
+package vo
+
+
+// ${functionName}对象 ${ClassName}Vo
+// @author ${author}
+// @date ${datetime}
+type ${ClassName}Vo struct {
+
+    model.${ClassName}
+
+    Foo string `form:"foo"` // foo
+    Bar string `form:"bar"` // bar
+    // ...
+}

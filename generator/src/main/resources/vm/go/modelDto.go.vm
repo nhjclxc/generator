@@ -1,0 +1,21 @@
+package dto
+
+import (
+    "gin_generator/model"
+)
+
+// ${functionName}对象 ${ClassName}Dto
+// @author ${author}
+// @date ${datetime}
+type ${ClassName}Dto struct {
+
+    model.${ClassName}
+
+    Keyword  string `form:"keyword"` // 模糊搜索字段
+
+    PageNum  int    `form:"pageNum"` // 页码
+    PageSize int    `form:"pageSize"` // 页大小
+
+    BeginTime string `form:"beginTime"` // 开始时间
+    EndTime   string `form:"endTime"`   // 结束时间
+}

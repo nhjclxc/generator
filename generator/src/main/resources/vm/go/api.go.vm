@@ -1,0 +1,230 @@
+package api
+
+import (
+    "errors"
+    "fmt"
+    "gin_generator/model"
+    commonModel "gin_generator/model/common"
+    "gin_generator/model/dto"
+    "gin_generator/service"
+    "github.com/gin-gonic/gin"
+    "net/http"
+    "strconv"
+    "strings"
+)
+
+// ${ClassName}Api ${functionName} api 层
+type ${ClassName}Api struct{
+    ${className}Service *service.${ClassName}Service
+}
+
+// Insert${ClassName} 新增${functionName}
+// @Tags ${functionName}模块
+// @Summary 新增${functionName}-Summary
+// @Description 新增${functionName}-Description
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param ${className} body model.${ClassName} true "修改${functionName}实体类"
+// @Success 200 {object} commonModel.JsonResult "新增${functionName}响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName} [post]
+func (this *${ClassName}Api) Insert${ClassName}(c *gin.Context) {
+    var ${className} model.${ClassName}
+    c.ShouldBindJSON(&${className})
+
+    res, err := this.${className}Service.Insert${ClassName}(&${className})
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("新增失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusInternalServerError, commonModel.JsonResultSuccess[any](res))
+}
+
+// Update${ClassName} 修改${functionName}
+// @Tags ${functionName}模块
+// @Summary 修改${functionName}-Summary
+// @Description 修改${functionName}-Description
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param ${className} body model.${ClassName} true "修改${functionName}实体类"
+// @Success 200 {object} commonModel.JsonResult "修改${functionName}响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName} [put]
+func (this *${ClassName}Api) Update${ClassName}(c *gin.Context) {
+    var ${className} model.${ClassName}
+    c.ShouldBindJSON(&${className})
+
+    res, err := this.${className}Service.Update${ClassName}(&${className})
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("修改失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusInternalServerError, commonModel.JsonResultSuccess[any](res))
+}
+
+// Delete${ClassName} 删除${functionName}
+// @Tags ${functionName}模块
+// @Summary 删除${functionName}-Summary
+// @Description 删除${functionName}-Description
+// @Security BearerAuth
+// @Accept param
+// @Produce param
+// @Param ${pkColumn.javaField}List param int64 true "${functionName}主键List"
+// @Success 200 {object} commonModel.JsonResult "删除${functionName}响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName}/:${pkColumn.javaField}List [delete]
+func (this *${ClassName}Api) Delete${ClassName}(c *gin.Context) {
+    ${pkColumn.javaField}ListStr := c.Param("${pkColumn.javaField}List") // 例如: "1,2,3"
+    ${pkColumn.javaField}List, err := parseIds(${pkColumn.javaField}ListStr)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, commonModel.JsonResultError("参数错误：" + err.Error()))
+        return
+    }
+
+    res, err := this.${className}Service.Delete${ClassName}(${pkColumn.javaField}List)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("删除失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusOK, commonModel.JsonResultSuccess[any](res))
+}
+
+// Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}详细信息
+// @Tags ${functionName}模块
+// @Summary 获取${functionName}详细信息-Summary
+// @Description 获取${functionName}详细信息-Description
+// @Security BearerAuth
+// @Accept param
+// @Produce param
+// @Param ${pkColumn.javaField} param int64 true "${functionName}主键List"
+// @Success 200 {object} commonModel.JsonResult "获取${functionName}详细信息"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName}/:${pkColumn.javaField} [get]
+func (this *${ClassName}Api) Get${ClassName}By${pkColumn.capJavaField}(c *gin.Context) {
+    ${pkColumn.javaField}Str := c.Param("${pkColumn.javaField}") // 例如: "1"
+    ${pkColumn.javaField}, err := parseId(${pkColumn.javaField}Str)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, commonModel.JsonResultError("参数错误：" + err.Error()))
+        return
+    }
+
+    res, err := this.${className}Service.Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField})
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("删除失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusOK, commonModel.JsonResultSuccess[any](res))
+}
+
+// Get${ClassName}List 查询${functionName}列表
+// @Tags ${functionName}模块
+// @Summary 查询${functionName}列表-Summary
+// @Description 查询${functionName}列表-Description
+// @Security BearerAuth
+// @Accept param
+// @Produce param
+// @Param ${className}Dto body model.${ClassName}Dto true "${functionName}实体Dto"
+// @Success 200 {object} commonModel.JsonResult "查询${functionName}列表响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName}/list [get]
+func (this *${ClassName}Api) Get${ClassName}List(c *gin.Context) {
+    var ${className}Dto dto.${ClassName}Dto
+    c.ShouldBindQuery(&${className}Dto)
+
+    res, err := this.${className}Service.Get${ClassName}List(&${className}Dto)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("查询${functionName}列表失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusOK, commonModel.JsonResultSuccess[any](res))
+}
+
+// Get${ClassName}PageList 分页查询${functionName}列表
+// @Tags ${functionName}模块
+// @Summary 分页查询${functionName}列表-Summary
+// @Description 分页查询${functionName}列表-Description
+// @Security BearerAuth
+// @Accept param
+// @Produce param
+// @Param ${className}Dto body model.${ClassName}Dto true "${functionName}实体Dto"
+// @Success 200 {object} commonModel.JsonResult "分页查询${functionName}列表响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName}/pageList [get]
+func (this *${ClassName}Api) Get${ClassName}PageList(c *gin.Context) {
+    var ${className}Dto dto.${ClassName}Dto
+    c.ShouldBindQuery(&${className}Dto)
+
+    res, err := this.${className}Service.Get${ClassName}PageList(&${className}Dto)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("查询${functionName}列表失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusOK, commonModel.JsonResultSuccess[any](res))
+}
+
+// Export${ClassName} 导出${functionName}列表
+// @Tags ${functionName}模块
+// @Summary 导出${functionName}列表-Summary
+// @Description 导出${functionName}列表-Description
+// @Security BearerAuth
+// @Accept param
+// @Produce param
+// @Param ${className}Dto body model.${ClassName}Dto true "${functionName}实体Dto"
+// @Success 200 {object} commonModel.JsonResult "导出${functionName}列表响应数据"
+// @Failure 401 {object} commonModel.JsonResult "未授权"
+// @Failure 500 {object} commonModel.JsonResult "服务器异常"
+// @Router /${businessName}/export [get]
+func (this *${ClassName}Api) Export${ClassName}(c *gin.Context) {
+    var ${className}Dto dto.${ClassName}Dto
+    c.ShouldBindQuery(&${className}Dto)
+
+    res, err := this.${className}Service.Export${ClassName}(&${className}Dto)
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, commonModel.JsonResultError("导出${functionName}列表失败：" + err.Error()))
+        return
+    }
+    c.JSON(http.StatusOK, commonModel.JsonResultSuccess[any](res))
+}
+
+// parseId 将 string 类型数据转化为 int64 类型数据
+func parseId(idStr string) (int64, error) {
+    return strconv.ParseInt(strings.TrimSpace(idStr), 10, 64)
+}
+
+// parseIds 将形如 "1,2,3" 的字符串解析为 []int64
+func parseIds(idListStr string) ([]int64, error) {
+    if idListStr == "" {
+        return nil, errors.New("idListStr 为空")
+    }
+
+    parts := strings.Split(idListStr, ",")
+    ids := make([]int64, 0, len(parts))
+
+    for _, part := range parts {
+        id, err := parseId(part)
+        if err != nil {
+            return nil, fmt.Errorf("无法解析 ID '%s'", part)
+        }
+        ids = append(ids, id)
+    }
+
+    return ids, nil
+}
+
+
+

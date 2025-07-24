@@ -40,9 +40,11 @@ public class GenUtils
         String columnName = column.getColumnName();
         // 设置java字段名
         column.setJavaField(StringUtils.toCamelCase(columnName));
+        column.setGoField(StringUtils.convertToCamelCase(columnName));
         // 设置默认类型
         column.setIsQuery(GenConstants.REQUIRE);
         column.setJavaType(GenConstants.TYPE_STRING);
+        column.setGoType(GenConstants.GO_TYPE_STRING);
         column.setQueryType(GenConstants.QUERY_EQ);
 
         if (arraysContains(GenConstants.COLUMNTYPE_STR, dataType) || arraysContains(GenConstants.COLUMNTYPE_TEXT, dataType))
@@ -55,6 +57,7 @@ public class GenUtils
         else if (arraysContains(GenConstants.COLUMNTYPE_TIME, dataType))
         {
             column.setJavaType(GenConstants.TYPE_DATE);
+            column.setGoType(GenConstants.GO_TYPE_DATE);
             column.setHtmlType(GenConstants.HTML_DATETIME);
         }
         else if (arraysContains(GenConstants.COLUMNTYPE_NUMBER, dataType))
@@ -66,12 +69,15 @@ public class GenUtils
             if ((str != null && str.length == 2 && Integer.parseInt(str[1]) > 0 ) || dataType.toLowerCase().contains("decimal"))
             {
                 column.setJavaType(GenConstants.TYPE_BIGDECIMAL);
+                column.setGoType(GenConstants.GO_TYPE_BIGDECIMAL);
             }else if (dataType.toLowerCase().contains("bigint")){
                 // 长整形
                 column.setJavaType(GenConstants.TYPE_LONG);
+                column.setGoType(GenConstants.GO_TYPE_LONG);
             }else {
                 // 整形
                 column.setJavaType(GenConstants.TYPE_INTEGER);
+                column.setGoType(GenConstants.GO_TYPE_INTEGER);
             }
         }
 

@@ -218,6 +218,7 @@ hljs.registerLanguage('xml', require('highlight.js/lib/languages/xml'));
 hljs.registerLanguage('html', require('highlight.js/lib/languages/xml'));
 hljs.registerLanguage('vue', require('highlight.js/lib/languages/xml'));
 hljs.registerLanguage('sql', require('highlight.js/lib/languages/sql'));
+hljs.registerLanguage('go', require('highlight.js/lib/languages/go'));
 
 export default {
   name: "Generator",

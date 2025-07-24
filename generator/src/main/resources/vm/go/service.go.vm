@@ -1,0 +1,80 @@
+package service
+
+import (
+    "gin_generator/model"
+    "gin_generator/model/dto"
+    "gorm.io/gorm"
+)
+
+
+// ${ClassName}Service ${functionName} Service 层
+type ${ClassName}Service struct {
+    DB *gorm.DB
+}
+
+// Insert${ClassName} 新增${functionName}
+func (this *${ClassName}Service) Insert${ClassName}(${className} *model.${ClassName}) (res any, err error) {
+
+    return ${className}.Insert${ClassName}(this.DB)
+}
+
+// Update${ClassName} 修改${functionName}
+func (this *${ClassName}Service) Update${ClassName}(${className} *model.${ClassName}) (res any, err error) {
+
+    return ${className}.Update${ClassName}By${pkColumn.capJavaField}(this.DB)
+}
+
+// Delete${ClassName} 删除${functionName}
+func (this *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (res any, err error) {
+
+    return (&model.${ClassName}{}).Delete${ClassName}(this.DB, ${pkColumn.javaField}List)
+}
+
+// Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}业务详细信息
+func (this *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (res any, err error) {
+
+    ${className} := model.${ClassName}{}
+    err = (&${className}).Get${ClassName}By${pkColumn.capJavaField}(this.DB, ${pkColumn.javaField})
+    if err != nil {
+        return nil, err
+    }
+
+    return ${className}, nil
+}
+
+// Get${ClassName}List 查询${functionName}业务列表
+func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+
+    ${className}List, err := (&model.${ClassName}{}).Get${ClassName}List(this.DB, ${className}Dto)
+    if err != nil {
+        return nil, err
+    }
+
+    return ${className}List, nil
+}
+
+// Get${ClassName}PageList 分页查询${functionName}业务列表
+func (this *${ClassName}Service) Get${ClassName}PageList(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+
+    ${className}List, total, err := (&model.${ClassName}{}).Get${ClassName}PageList(this.DB, ${className}Dto)
+    if err != nil {
+        return nil, err
+    }
+
+    return map[string]any{
+        "list":     ${className}List,
+        "total":    total,
+        "pageNum":  ${className}Dto.PageNum,
+        "pageSize": ${className}Dto.PageSize,
+    }, nil
+}
+
+// Export${ClassName} 导出${functionName}业务列表
+func (this *${ClassName}Service) Export${ClassName}(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+
+    (&model.${ClassName}{}).Get${ClassName}PageList(this.DB, ${className}Dto)
+    // 实现导出 ...
+
+    return nil, nil
+}
+

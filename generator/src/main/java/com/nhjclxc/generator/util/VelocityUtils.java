@@ -22,6 +22,8 @@ public class VelocityUtils
 {
     /** 项目空间路径 */
     private static final String PROJECT_PATH = "main/java";
+    /** GO项目空间路径 */
+    private static final String GO_PROJECT_PATH = "go";
 
     /** 默认上级菜单，系统工具 */
     private static final String DEFAULT_PARENT_MENU_ID = "3";
@@ -138,6 +140,13 @@ public class VelocityUtils
         templates.add("vm/java/service.java.vm");
         templates.add("vm/java/serviceImpl.java.vm");
         templates.add("vm/java/controller.java.vm");
+        templates.add("vm/go/model.go.vm");
+        templates.add("vm/go/modelDto.go.vm");
+        templates.add("vm/go/modelVo.go.vm");
+        templates.add("vm/go/service.go.vm");
+        templates.add("vm/go/api.go.vm");
+        templates.add("vm/go/router.go.vm");
+        templates.add("vm/go/JsonResult.go.vm");
         templates.add("vm/xml/mapper.xml.vm");
         templates.add("vm/sql/sql.vm");
         templates.add("vm/js/api.js.vm");
@@ -175,6 +184,7 @@ public class VelocityUtils
         String tableName = genTable.getTableName();
 
         String javaPath = PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
+        String goPath = GO_PROJECT_PATH + "/" + StringUtils.replace(packageName, ".", "/");
         String vuePath = "vue";
 
         if (template.contains("model.java.vm"))
@@ -196,6 +206,34 @@ public class VelocityUtils
         else if (template.contains("controller.java.vm"))
         {
             fileName = StringUtils.format("{}/controller/{}Controller.java", javaPath, className);
+        }
+        else if (template.contains("model.go.vm"))
+        {
+            fileName = StringUtils.format("{}/model/{}Model.go", goPath, className);
+        }
+        else if (template.contains("modelDto.go.vm"))
+        {
+            fileName = StringUtils.format("{}/model/dto/{}ModelDto.go", goPath, className);
+        }
+        else if (template.contains("modelVo.go.vm"))
+        {
+            fileName = StringUtils.format("{}/model/vo/{}ModelVo.go", goPath, className);
+        }
+        else if (template.contains("service.go.vm"))
+        {
+            fileName = StringUtils.format("{}/service/{}Service.go", goPath, className);
+        }
+        else if (template.contains("JsonResult.go.vm"))
+        {
+            fileName = StringUtils.format("{}/model/common/JsonResult.go", goPath);
+        }
+        else if (template.contains("api.go.vm"))
+        {
+            fileName = StringUtils.format("{}/api/{}Api.go", goPath, className);
+        }
+        else if (template.contains("router.go.vm"))
+        {
+            fileName = StringUtils.format("{}/router/{}Router.go", goPath, className);
         }
         else if (template.contains("mapper.xml.vm"))
         {

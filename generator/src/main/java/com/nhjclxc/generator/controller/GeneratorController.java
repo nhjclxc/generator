@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * 代码生成控制器
- * 
+ *
  * @author LuoXianchao
  */
 @Slf4j
@@ -74,7 +74,7 @@ public class GeneratorController {
     /**
      * 解析数据库表结构
      */
-    @ApiOperation(value = "连接到数据库")
+    @ApiOperation(value = "解析数据库表结构")
     @ApiResponse(code = 200, message = "success")
     @GetMapping("/parse")
     public JsonResult<PageInfo<GenTable>> parse(GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {

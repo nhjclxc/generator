@@ -1,0 +1,391 @@
+package model
+
+import (
+    "encoding/json"
+    "errors"
+    "fmt"
+    "gin_generator/model/dto"
+    "gin_generator/model/vo"
+    "gorm.io/gorm"
+    "time"
+    "github.com/jinzhu/copier"
+    "github.com/mitchellh/mapstructure"
+)
+
+// ${ClassName} ${functionName} 结构体
+// @author ${author}
+// @date ${datetime}
+type ${ClassName} struct {
+
+#foreach ($column in $columns)
+#if(!$table.isSuperColumn($column.javaField))
+#if($column.list)
+    #set($parentheseIndex=$column.columnComment.indexOf("（"))
+    #if($parentheseIndex != -1)
+        #set($comment=$column.columnComment.substring(0, $parentheseIndex))
+    #else
+        #set($comment=$column.columnComment)
+    #end
+#end
+
+#set($tags = "column:$column.columnName")
+#if($column.isPk == "1")
+##    #set($void = $tags.add("primaryKey"))
+    #set($tags = $tags + ";primaryKey")
+#end
+#if($column.isIncrement == "1")
+##    #set($void = $tags.add("auto_increment"))
+    #set($tags = $tags + ";auto_increment")
+#end
+#if($column.isNullable == "1")
+##    #set($void = $tags.add("not null"))
+    #set($tags = $tags + ";not null")
+#end
+## 默认值（需转义引号）
+#if($column.columnDefault && $column.columnDefault != "")
+##    #set($void = $tags.add("default:'$column.columnDefault'"))
+    #set($tags = $tags + ";default:'$column.columnDefault'")
+#end
+## 指定字段类型
+#if($column.columnType && $column.columnType != "")
+##    #set($void = $tags.add("type:$column.columnType"))
+    #set($tags = $tags + ";type:$column.columnType")
+#end
+## 指定字段类型
+    ###if($column.columnComment && $column.columnComment != "")
+    ##    #set($void = $tags.add("comment:$column.columnComment"))
+    ###end
+###set($gormTag = $tags.join(";"))
+$column.goField $column.goType `gorm:"$tags" json:"$column.javaField"`// $column.columnComment
+#end
+#end
+
+
+    Version uint `gorm:"column:version;default:1" json:"version"` // 乐观锁（版本控制）
+
+    Remark string `gorm:"column:remark;" description:"备注"` // 备注
+
+    DeletedAt gorm.DeletedAt `gorm:"column:deleted_at;type:datetime" json:"deletedAt"` // 删除标记, 删除时间 GORM 默认启用了“软删除（Soft Delete）”只要存在这个字段，GORM 默认启用软删除。
+
+    DeletedBy uint64 `gorm:"column:deleted_by;type:bigint" json:"deletedBy"` // 删除人id
+
+    CreatedAt time.Time `gorm:"column:created_at;type:datetime" json:"createdAt"` // 创建时间
+
+    CreatedBy uint64 `gorm:"column:created_by;type:bigint" json:"createdBy"` // 创建人id
+
+    UpdatedAt time.Time `gorm:"column:updated_at;type:datetime" json:"updatedAt"` // 更新时间
+
+    UpdatedBy uint64 `gorm:"column:updated_by;type:bigint" json:"updatedBy"` // 更新人id
+
+    // time_format:"2006-01-02 15:04:05"
+}
+
+// TableName 返回当前实体类的表名
+func (this *${ClassName}) TableName() string {
+    return "${tableName}"
+}
+
+
+// 可用钩子函数包括：
+// BeforeCreate / AfterCreate
+// BeforeUpdate / AfterUpdate
+// BeforeDelete / AfterDelete
+func (this *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
+    //...
+    return
+}
+
+
+// DtoTo modelDto 转化为 model
+func (this *${ClassName}) DtoTo(${className}Dto dto.${ClassName}Dto) {
+    // go get github.com/jinzhu/copier
+
+    err := copier.Copy(&this, &${className}Dto)
+    if err != nil {
+        fmt.Printf("DtoTo Copy error: %v", err)
+        return
+    }
+}
+
+// ToDto model 转化为 modelDto
+func (this *${ClassName}) ToDto() (*dto.${ClassName}Dto) {
+    // go get github.com/jinzhu/copier
+
+    var ${className}Dto dto.${ClassName}Dto
+    err := copier.Copy(&${className}Dto, &this)
+    if err != nil {
+        fmt.Printf("DtoTo Copy error: %v", err)
+        return nil
+    }
+    return &${className}Dto
+}
+
+// ToVo model 转化为 modelVo
+func (this *${ClassName}) ToVo() (*vo.${ClassName}Vo) {
+    // go get github.com/jinzhu/copier
+
+    var ${className}Vo vo.${ClassName}Vo
+    err := copier.Copy(&${className}Vo, &this)
+    if err != nil {
+        fmt.Printf("ToVo Copy error: %v", err)
+        return nil
+    }
+    return &${className}Vo
+}
+
+// MapToStruct map映射转化为当前结构体
+func MapToStruct(inputMap map[string]any) (*${ClassName}) {
+    //go get github.com/mitchellh/mapstructure
+
+    var ${className} ${ClassName}
+    err := mapstructure.Decode(inputMap, &${className})
+    if err != nil {
+        fmt.Printf("MapToStruct Decode error: %v", err)
+        return nil
+    }
+    return &${className}
+}
+
+// StructToMap 当前结构体转化为map映射
+func (this *${ClassName}) StructToMap() (map[string]any) {
+    var m map[string]any
+    bytes, err := json.Marshal(this)
+    if err != nil {
+        fmt.Printf("StructToMap marshal error: %v", err)
+        return nil
+    }
+
+    err = json.Unmarshal(bytes, &m)
+    if err != nil {
+        fmt.Printf("StructToMap unmarshal error: %v", err)
+        return nil
+    }
+    return m
+}
+
+
+
+// 由于有时需要开启事务，因此 DB *gorm.DB 选择从外部传入
+
+// Insert${ClassName} 新增${functionName}
+func (this *${ClassName}) Insert${ClassName}(DB *gorm.DB) (int, error) {
+    fmt.Printf("Insert${ClassName}：%#v \n", this)
+
+    // 先查询是否有相同 name 的数据存在
+    temp := &${ClassName}{}
+    tx := DB.Where("name = ?", this.ClassName).First(temp)
+    fmt.Printf("Insert${ClassName}.Where：%#v \n", temp)
+    if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+        return 0, errors.New("Insert${ClassName}.Where, 存在相同name: " + temp.ClassName)
+    }
+
+    // 执行 Insert
+    err := DB.Create(&this).Error
+
+    if err != nil {
+        return 0, errors.New("Insert${ClassName}.DB.Create, 新增失败: " + err.Error())
+    }
+    return 1, nil
+}
+
+// Update${ClassName}By${pkColumn.capJavaField} 根据主键修改代码生成的所有字段
+func (this *${ClassName}) Update${ClassName}By${pkColumn.capJavaField}(DB *gorm.DB) (int, error) {
+    fmt.Printf("Update${ClassName}By${pkColumn.capJavaField}：%#v \n", this)
+
+    // 1、查询该id是否存在
+    if this.${pkColumn.capJavaField} == 0 {
+        return 0, errors.New("${pkColumn.capJavaField} 不能为空！！！: ")
+    }
+
+    // 2、再看看name是否重复
+    temp := &${ClassName}{}
+    tx := DB.Where("name = ?", this.ClassName).First(temp)
+    fmt.Printf("Update${ClassName}By${pkColumn.capJavaField}.Where：%#v \n", temp)
+    if !errors.Is(tx.Error, gorm.ErrRecordNotFound) && temp.${pkColumn.capJavaField} != this.${pkColumn.capJavaField} {
+        return 0, errors.New("Update${ClassName}By${pkColumn.capJavaField}.Where, 存在相同name: " + temp.ClassName)
+    }
+
+    // 3、执行修改
+    //保存整个结构体（全字段更新）
+    saveErr := DB.Save(this).Error
+    if saveErr != nil {
+        return 0, errors.New("Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: " + saveErr.Error())
+    }
+    return 1, nil
+}
+
+// Update${ClassName}Selective 修改代码生成不为默认值的字段
+func (this *${ClassName}) Update${ClassName}Selective(DB *gorm.DB) (int, error) {
+    fmt.Printf("Update${ClassName}Selective：%#v \n", this)
+
+    // db.Model().Updates()：只更新指定字段
+    err := DB.Model(this).
+        Where("table_id = ?", this.${pkColumn.capJavaField}).
+        Updates(this).
+        Error
+    if err != nil {
+        return 0, errors.New("Update${ClassName}Selective.Updates, 选择性修改失败: " + err.Error())
+    }
+
+    return 1, nil
+}
+
+// Delete${ClassName} 删除代码生成业务
+func (this *${ClassName}) Delete${ClassName}(DB *gorm.DB, ${pkColumn.javaField}List []int64) (int, error) {
+    fmt.Printf("Delete${ClassName}：%#v \n", ${pkColumn.javaField}List)
+
+    // 以下使用的是软删除，以下必须有DeletedAt gorm.DeletedAt字段
+    result := DB.Delete(&this, "table_id in ?", ${pkColumn.javaField}List)
+    if result.Error != nil {
+        return 0, errors.New("Delete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+    }
+
+    //// 以下使用的是物理删除
+    //result := DB.Unscoped().Delete(this, "id in ?", ${pkColumn.javaField}List)
+    //if result.Error != nil {
+    //	return 0, errors.New("Delete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+    //}
+
+    return int(result.RowsAffected), nil
+}
+
+// Get${ClassName}By${pkColumn.capJavaField} 获取代码生成业务业务详细信息
+func (this *${ClassName}) Get${ClassName}By${pkColumn.capJavaField}(DB *gorm.DB, ${pkColumn.javaField} int64) (error) {
+    fmt.Printf("Delete${ClassName}：%#v \n", ${pkColumn.javaField})
+    return DB.First(this, "table_id = ?", ${pkColumn.javaField}).Error
+}
+
+// Get${ClassName}List 查询代码生成业务业务列表
+func (this *${ClassName}) Get${ClassName}List(DB *gorm.DB, ${className}Dto *dto.${ClassName}Dto) ([]${ClassName}, error) {
+    fmt.Printf("Get${ClassName}List：%#v \n", ${className}Dto)
+
+    var tables []${ClassName}
+    query := DB.Model(this)
+
+    // 构造查询条件
+#foreach($column in $columns)
+    #set($queryType=$column.queryType)
+    #set($javaField=$column.javaField)
+    #set($javaType=$column.javaType)
+    #set($columnName=$column.columnName)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    #if($column.query)
+        #set($tags = "=")
+        #if($column.queryType == "EQ")
+            #set($tags = "=")
+        #elseif($queryType == "NE")
+            #set($tags = "!=")
+        #elseif($queryType == "GT")
+            #set($tags = ">")
+        #elseif($queryType == "GTE")
+            #set($tags = ">=")
+        #elseif($queryType == "LT")
+            #set($tags = "<")
+        #elseif($queryType == "LTE")
+            #set($tags = "<=")
+        #elseif($queryType == "LIKE")
+            #set($tags = "LIKE")
+        #elseif($queryType == "BETWEEN")
+        #end
+        #if($column.goType == 'time.Time')
+        if !${className}Dto.${column.goField}.IsZero() {
+            query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField)
+            // query = query.Where("DATE($columnName) $tags ?", ${className}Dto.$column.goField.Format("2006-01-02"))
+        }
+        #else
+        if ${className}Dto.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField) }
+        #end
+    #end
+#end
+
+if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
+    query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+}
+
+    // // 添加分页逻辑
+    // if ${className}Dto.PageNum > 0 && ${className}Dto.PageSize > 0 {
+    //     offset := (${className}Dto.PageNum - 1) * ${className}Dto.PageSize
+    //     query = query.Offset(offset).Limit(${className}Dto.PageSize)
+    // }
+
+    err := query.Find(&tables).Error
+    return tables, err
+}
+
+// Get${ClassName}PageList 分页查询代码生成业务业务列表
+func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *dto.${ClassName}Dto) ([]${ClassName}, int64, error) {
+    var (
+        ${className}s []${ClassName}
+        total     int64
+    )
+
+    query := DB.Model(&${ClassName}{})
+
+// 构造查询条件
+#foreach($column in $columns)
+    #set($queryType=$column.queryType)
+    #set($javaField=$column.javaField)
+    #set($javaType=$column.javaType)
+    #set($columnName=$column.columnName)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    #if($column.query)
+        #set($tags = "=")
+        #if($column.queryType == "EQ")
+            #set($tags = "=")
+        #elseif($queryType == "NE")
+            #set($tags = "!=")
+        #elseif($queryType == "GT")
+            #set($tags = ">")
+        #elseif($queryType == "GTE")
+            #set($tags = ">=")
+        #elseif($queryType == "LT")
+            #set($tags = "<")
+        #elseif($queryType == "LTE")
+            #set($tags = "<=")
+        #elseif($queryType == "LIKE")
+            #set($tags = "LIKE")
+        #elseif($queryType == "BETWEEN")
+        #end
+        #if($column.goType == 'time.Time')
+        if !${className}Dto.${column.goField}.IsZero() {
+        query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField)
+        // query = query.Where("DATE($columnName) $tags ?", ${className}Dto.$column.goField.Format("2006-01-02"))
+        }
+        #else
+        if ${className}Dto.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField) }
+        #end
+    #end
+#end
+
+if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
+query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+}
+
+    // 查询总数
+    if err := query.Count(&total).Error; err != nil {
+        return nil, 0, err
+    }
+
+    // 分页参数默认值
+    pageNum := ${className}Dto.PageNum
+    pageSize := ${className}Dto.PageSize
+    if pageNum <= 0 {
+        pageNum = 1
+    }
+    if pageSize <= 0 {
+        pageSize = 10
+    }
+
+    // 分页数据
+    err := query.
+        Limit(pageSize).Offset((pageNum - 1) * pageSize).
+        Order("created_at desc").
+        Find(&${className}s).Error
+
+    if err != nil {
+        return nil, 0, err
+    }
+
+    return ${className}s, total, nil
+}
+

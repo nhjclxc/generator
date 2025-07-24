@@ -55,11 +55,22 @@ public class GenTableColumn  implements Serializable {
     @NotBlank(message = "Java属性不能为空")
     private String javaField;
 
+    /** Golang类型 */
+    private String goType;
+
+    /** Golang字段名 */
+    @NotBlank(message = "Golang属性不能为空")
+    private String goField;
+
     /** 是否主键（1是） */
     private String isPk;
 
     /** 是否自增（1是） */
     private String isIncrement;
+    /** 是否能为null（1是） */
+    private String isNullable;
+    /** 是否能为null（1是） */
+    private String columnDefault;
 
     /** 是否必填（1是） */
     private String isRequired;
@@ -115,6 +126,10 @@ public class GenTableColumn  implements Serializable {
     public String getCapJavaField()
     {
         return StringUtils.capitalize(javaField);
+    }
+    public String getCapGoField()
+    {
+        return StringUtils.capitalize(goField);
     }
 
     public boolean isPk()
@@ -198,6 +213,10 @@ public class GenTableColumn  implements Serializable {
     public boolean isUsableColumn()
     {
         return isUsableColumn(javaField);
+    }
+    public boolean isUsableColumnGo()
+    {
+        return isUsableColumn(goField);
     }
 
     public static boolean isUsableColumn(String javaField)

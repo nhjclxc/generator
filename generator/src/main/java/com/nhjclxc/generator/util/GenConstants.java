@@ -90,21 +90,33 @@ public class GenConstants
 
     /** 字符串类型 */
     public static final String TYPE_STRING = "String";
+    /** GO字符串类型 */
+    public static final String GO_TYPE_STRING = "string";
 
     /** 整型 */
     public static final String TYPE_INTEGER = "Integer";
+    /** GO整型 */
+    public static final String GO_TYPE_INTEGER = "int";
 
     /** 长整型 */
     public static final String TYPE_LONG = "Long";
+    /** GO长整型 */
+    public static final String GO_TYPE_LONG = "int64";
 
     /** 浮点型 */
     public static final String TYPE_DOUBLE = "Double";
+    /** 浮点型 */
+    public static final String GO_TYPE_DOUBLE = "float64";
 
     /** 高精度计算类型 */
     public static final String TYPE_BIGDECIMAL = "BigDecimal";
+    /** GO高精度计算类型 */
+    public static final String GO_TYPE_BIGDECIMAL = "big.Float";
 
     /** 时间类型 */
     public static final String TYPE_DATE = "LocalDateTime";
+    /** Go时间类型 */
+    public static final String GO_TYPE_DATE = "time.Time";
 
     /** 模糊查询 */
     public static final String QUERY_LIKE = "LIKE";

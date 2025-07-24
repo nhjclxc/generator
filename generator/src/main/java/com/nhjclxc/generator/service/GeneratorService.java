@@ -149,10 +149,11 @@ public class GeneratorService {
 	 * 获取列数据
 	 */
 	private static String getDBTableColumnsByName(String tableNames){
-		return "select table_name, column_name, ordinal_position as sort, column_comment, column_type, " +
+		return "select table_name, column_name, ordinal_position as sort, column_comment, column_type, column_default," +
 				"(case when (is_nullable = 'no' && column_key != 'PRI') then '1' else '0' end) as is_required, " +
 				"(case when column_key = 'PRI' then '1' else '0' end) as is_pk, " +
-				"(case when extra = 'auto_increment' then '1' else '0' end) as is_increment\n" +
+				"(case when extra = 'auto_increment' then '1' else '0' end) as is_increment, " +
+				"(case when IS_NULLABLE = 'NO' then '1' else '0' end) as is_nullable\n" +
 		"\t\tfrom information_schema.columns where table_schema = (select database()) and table_name in ( " + tableNames + " ) \n" +
 		"\t\torder by ordinal_position";
 	}
@@ -277,7 +278,8 @@ public class GeneratorService {
 					.columnName(columnsRes.getString("column_name")).sort(columnsRes.getInt("sort"))
 					.columnComment(columnsRes.getString("column_comment")).columnType(columnsRes.getString("column_type"))
 					.isRequired(columnsRes.getString("is_required")).isPk(columnsRes.getString("is_pk"))
-					.isIncrement(columnsRes.getString("is_increment")).build();
+					.isIncrement(columnsRes.getString("is_increment")).isNullable(columnsRes.getString("is_nullable"))
+					.build();
 			GenUtils.initColumnField(column);
 			genTableColumnsList.add(column);
 		}
