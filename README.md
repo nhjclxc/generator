@@ -30,6 +30,7 @@ git clone https://github.com/nhjclxc/generator.git
 3. 启动
 
    ​	`java -jar generator-0.0.1-SNAPSHOT.jar` 
+   ​	`nohup java -jar generator-0.0.1-SNAPSHOT.jar > nohup.log 2>&1 &` 
 
 后端项目启动在9099端口
 
