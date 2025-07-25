@@ -4,10 +4,9 @@ import (
     "encoding/json"
     "errors"
     "fmt"
+    "github.com/mitchellh/mapstructure"
     "gorm.io/gorm"
     "time"
-    "github.com/jinzhu/copier"
-    "github.com/mitchellh/mapstructure"
 )
 
 // ${ClassName} ${functionName} 结构体
@@ -54,10 +53,11 @@ type ${ClassName} struct {
     ##    #set($void = $tags.add("comment:$column.columnComment"))
     ###end
 ###set($gormTag = $tags.join(";"))
-$column.goField $column.goType `gorm:"$tags" json:"$column.javaField"`// $column.columnComment
+$column.goField $column.goType `gorm:"$tags" json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
 #end
 #end
 
+    // todo update The following predefined fields
 
     Version uint `gorm:"column:version;default:1" json:"version"` // 乐观锁（版本控制）
 
@@ -89,50 +89,18 @@ func (this *${ClassName}) TableName() string {
 // BeforeUpdate / AfterUpdate
 // BeforeDelete / AfterDelete
 func (this *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
-    //...
+    this.CreateTime = time.Now()
+    this.UpdateTime = time.Now()
     return
 }
 
-
-// DtoTo modelDto 转化为 model
-func (this *${ClassName}) DtoTo(${className}Dto dto.${ClassName}Dto) {
-    // go get github.com/jinzhu/copier
-
-    err := copier.Copy(&this, &${className}Dto)
-    if err != nil {
-        fmt.Printf("DtoTo Copy error: %v", err)
-        return
-    }
+func (this *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
+    this.UpdateTime = time.Now()
+    return
 }
 
-// ToDto model 转化为 modelDto
-func (this *${ClassName}) ToDto() (*dto.${ClassName}Dto) {
-    // go get github.com/jinzhu/copier
-
-    var ${className}Dto dto.${ClassName}Dto
-    err := copier.Copy(&${className}Dto, &this)
-    if err != nil {
-        fmt.Printf("DtoTo Copy error: %v", err)
-        return nil
-    }
-    return &${className}Dto
-}
-
-// ToVo model 转化为 modelVo
-func (this *${ClassName}) ToVo() (*vo.${ClassName}Vo) {
-    // go get github.com/jinzhu/copier
-
-    var ${className}Vo vo.${ClassName}Vo
-    err := copier.Copy(&${className}Vo, &this)
-    if err != nil {
-        fmt.Printf("ToVo Copy error: %v", err)
-        return nil
-    }
-    return &${className}Vo
-}
-
-// MapToStruct map映射转化为当前结构体
-func MapToStruct(inputMap map[string]any) (*${ClassName}) {
+// MapTo${ClassName} map映射转化为当前结构体
+func MapTo${ClassName}(inputMap map[string]any) (*${ClassName}) {
     //go get github.com/mitchellh/mapstructure
 
     var ${className} ${ClassName}
@@ -144,8 +112,8 @@ func MapToStruct(inputMap map[string]any) (*${ClassName}) {
     return &${className}
 }
 
-// StructToMap 当前结构体转化为map映射
-func (this *${ClassName}) StructToMap() (map[string]any) {
+// ${ClassName}ToMap 当前结构体转化为map映射
+func (this *${ClassName}) ${ClassName}ToMap() (map[string]any) {
     var m map[string]any
     bytes, err := json.Marshal(this)
     if err != nil {
@@ -171,10 +139,11 @@ func (this *${ClassName}) Insert${ClassName}(DB *gorm.DB) (int, error) {
 
     // 先查询是否有相同 name 的数据存在
     temp := &${ClassName}{}
-    tx := DB.Where("name = ?", this.ClassName).First(temp)
+    // todo update name
+    tx := DB.Where("name = ?", this.?).First(temp)
     fmt.Printf("Insert${ClassName}.Where：%#v \n", temp)
     if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-        return 0, errors.New("Insert${ClassName}.Where, 存在相同name: " + temp.ClassName)
+        return 0, errors.New("Insert${ClassName}.Where, 存在相同name: " + temp.?)
     }
 
     // 执行 Insert
@@ -186,7 +155,18 @@ func (this *${ClassName}) Insert${ClassName}(DB *gorm.DB) (int, error) {
     return 1, nil
 }
 
-// Update${ClassName}By${pkColumn.capJavaField} 根据主键修改代码生成的所有字段
+// BatchInsert${ClassName}s 批量新增${functionName}
+func (this *${ClassName}) BatchInsert${ClassName}s(DB *gorm.DB, tables []${ClassName}) (int, error) {
+
+    result := DB.Create(&tables)
+
+    if result.Error != nil {
+        return 0, errors.New("BatchInsert${ClassName}s.DB.Create, 新增失败: " + result.Error.Error())
+    }
+    return int(result.RowsAffected), nil
+}
+
+// Update${ClassName}By${pkColumn.capJavaField} 根据主键修改${functionName}的所有字段
 func (this *${ClassName}) Update${ClassName}By${pkColumn.capJavaField}(DB *gorm.DB) (int, error) {
     fmt.Printf("Update${ClassName}By${pkColumn.capJavaField}：%#v \n", this)
 
@@ -197,10 +177,11 @@ func (this *${ClassName}) Update${ClassName}By${pkColumn.capJavaField}(DB *gorm.
 
     // 2、再看看name是否重复
     temp := &${ClassName}{}
-    tx := DB.Where("name = ?", this.ClassName).First(temp)
+    // todo update name
+    tx := DB.Where("name = ?", this.?).First(temp)
     fmt.Printf("Update${ClassName}By${pkColumn.capJavaField}.Where：%#v \n", temp)
     if !errors.Is(tx.Error, gorm.ErrRecordNotFound) && temp.${pkColumn.capJavaField} != this.${pkColumn.capJavaField} {
-        return 0, errors.New("Update${ClassName}By${pkColumn.capJavaField}.Where, 存在相同name: " + temp.ClassName)
+        return 0, errors.New("Update${ClassName}By${pkColumn.capJavaField}.Where, 存在相同name: " + temp.?)
     }
 
     // 3、执行修改
@@ -212,13 +193,13 @@ func (this *${ClassName}) Update${ClassName}By${pkColumn.capJavaField}(DB *gorm.
     return 1, nil
 }
 
-// Update${ClassName}Selective 修改代码生成不为默认值的字段
+// Update${ClassName}Selective 修改${functionName}不为默认值的字段
 func (this *${ClassName}) Update${ClassName}Selective(DB *gorm.DB) (int, error) {
     fmt.Printf("Update${ClassName}Selective：%#v \n", this)
 
     // db.Model().Updates()：只更新指定字段
     err := DB.Model(this).
-        Where("table_id = ?", this.${pkColumn.capJavaField}).
+        Where("${pkColumn.columnName} = ?", this.${pkColumn.capJavaField}).
         Updates(this).
         Error
     if err != nil {
@@ -228,18 +209,19 @@ func (this *${ClassName}) Update${ClassName}Selective(DB *gorm.DB) (int, error) 
     return 1, nil
 }
 
-// Delete${ClassName} 删除代码生成业务
+// Delete${ClassName} 删除${functionName}
 func (this *${ClassName}) Delete${ClassName}(DB *gorm.DB, ${pkColumn.javaField}List []int64) (int, error) {
     fmt.Printf("Delete${ClassName}：%#v \n", ${pkColumn.javaField}List)
 
-    // 以下使用的是软删除，以下必须有DeletedAt gorm.DeletedAt字段
-    result := DB.Delete(&this, "table_id in ?", ${pkColumn.javaField}List)
+    // 当存在DeletedAt gorm.DeletedAt字段时为软删除，否则为物理删除
+    result := DB.Delete(&this, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
+    // result := DB.Model(&this).Where("${pkColumn.columnName} IN ?", tableIdList).Update("state", 0)
     if result.Error != nil {
         return 0, errors.New("Delete${ClassName}.Delete, 删除失败: " + result.Error.Error())
     }
 
     //// 以下使用的是物理删除
-    //result := DB.Unscoped().Delete(this, "id in ?", ${pkColumn.javaField}List)
+    //result := DB.Unscoped().Delete(this, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
     //if result.Error != nil {
     //	return 0, errors.New("Delete${ClassName}.Delete, 删除失败: " + result.Error.Error())
     //}
@@ -247,20 +229,32 @@ func (this *${ClassName}) Delete${ClassName}(DB *gorm.DB, ${pkColumn.javaField}L
     return int(result.RowsAffected), nil
 }
 
-// Get${ClassName}By${pkColumn.capJavaField} 获取代码生成业务业务详细信息
-func (this *${ClassName}) Get${ClassName}By${pkColumn.capJavaField}(DB *gorm.DB, ${pkColumn.javaField} int64) (error) {
-    fmt.Printf("Delete${ClassName}：%#v \n", ${pkColumn.javaField})
-    return DB.First(this, "table_id = ?", ${pkColumn.javaField}).Error
+// BatchDelete${ClassName}s 根据主键批量删除${functionName}
+func (this *${ClassName}) BatchDelete${ClassName}s(DB *gorm.DB, ${pkColumn.javaField}List []int64) error {
+    return DB.Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&this).Error
 }
 
-// Get${ClassName}List 查询代码生成业务业务列表
-func (this *${ClassName}) Get${ClassName}List(DB *gorm.DB, ${className}Dto *dto.${ClassName}Dto) ([]${ClassName}, error) {
-    fmt.Printf("Get${ClassName}List：%#v \n", ${className}Dto)
+// Find${ClassName}By${pkColumn.capJavaField} 获取${functionName}详细信息
+func (this *${ClassName}) Find${ClassName}By${pkColumn.capJavaField}(DB *gorm.DB, ${pkColumn.javaField} int64) (error) {
+    fmt.Printf("Delete${ClassName}：%#v \n", ${pkColumn.javaField})
+    return DB.First(this, "${pkColumn.columnName} = ?", ${pkColumn.javaField}).Error
+}
+
+// Find${ClassName}sBy${pkColumn.capJavaField}List 根据主键批量查询${functionName}详细信息
+func Find${ClassName}sBy${pkColumn.capJavaField}List(DB *gorm.DB, ${pkColumn.javaField}List []int64) ([]${ClassName}, error) {
+    var result []${ClassName}
+    err := DB.Where("id IN ?", ${pkColumn.javaField}List).Find(&result).Error
+    return result, err
+}
+
+// Find${ClassName}List 查询${functionName}列表
+func (this *${ClassName}) Find${ClassName}List(DB *gorm.DB, satrtTime time.Time, endTime time.Time) ([]${ClassName}, error) {
+    fmt.Printf("Get${ClassName}List：%#v \n", this)
 
     var tables []${ClassName}
     query := DB.Model(this)
 
-    // 构造查询条件
+        // 构造查询条件
 #foreach($column in $columns)
     #set($queryType=$column.queryType)
     #set($javaField=$column.javaField)
@@ -286,32 +280,37 @@ func (this *${ClassName}) Get${ClassName}List(DB *gorm.DB, ${className}Dto *dto.
         #elseif($queryType == "BETWEEN")
         #end
         #if($column.goType == 'time.Time')
-        if !${className}Dto.${column.goField}.IsZero() {
-            query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField)
-            // query = query.Where("DATE($columnName) $tags ?", ${className}Dto.$column.goField.Format("2006-01-02"))
+        if !this.${column.goField}.IsZero() {
+            query = query.Where("$columnName $tags ?", this.$column.goField)
+            // query = query.Where("DATE($columnName) $tags ?", this.$column.goField.Format("2006-01-02"))
         }
         #else
-        if ${className}Dto.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField) }
+        if this.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + this.$column.goField + "%"#else this.$column.goField #end) }
         #end
     #end
 #end
 
-    if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
-        query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+    if !satrtTime.IsZero() {
+        query = query.Where("create_time >= ?", satrtTime)
+    }
+    if !endTime.IsZero() {
+        query = query.Where("create_time <= ?", endTime)
     }
 
     // // 添加分页逻辑
-    // if ${className}Dto.PageNum > 0 && ${className}Dto.PageSize > 0 {
-    //     offset := (${className}Dto.PageNum - 1) * ${className}Dto.PageSize
-    //     query = query.Offset(offset).Limit(${className}Dto.PageSize)
+    // if ${className}.PageNum > 0 && ${className}.PageSize > 0 {
+    //     offset := (${className}.PageNum - 1) * ${className}.PageSize
+    //     query = query.Offset(offset).Limit(${className}.PageSize)
     // }
 
     err := query.Find(&tables).Error
     return tables, err
 }
 
-// Get${ClassName}PageList 分页查询代码生成业务业务列表
-func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *dto.${ClassName}Dto) ([]${ClassName}, int64, error) {
+// Find${ClassName}PageList 分页查询${functionName}列表
+func (this *${ClassName}) Find${ClassName}PageList(DB *gorm.DB, satrtTime time.Time, endTime time.Time, pageNum int, pageSize int) ([]${ClassName}, int64, error) {
+    fmt.Printf("Get${ClassName}PageList：%#v \n", this)
+
     var (
         ${className}s []${ClassName}
         total     int64
@@ -345,18 +344,21 @@ func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *
         #elseif($queryType == "BETWEEN")
         #end
         #if($column.goType == 'time.Time')
-        if !${className}Dto.${column.goField}.IsZero() {
-        query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField)
-        // query = query.Where("DATE($columnName) $tags ?", ${className}Dto.$column.goField.Format("2006-01-02"))
+        if !this.${column.goField}.IsZero() {
+            query = query.Where("$columnName $tags ?", this.$column.goField)
+            // query = query.Where("DATE($columnName) $tags ?", this.$column.goField.Format("2006-01-02"))
         }
         #else
-        if ${className}Dto.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?", ${className}Dto.$column.goField) }
+        if this.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + this.$column.goField + "%"#else this.$column.goField #end) }
         #end
     #end
 #end
 
-    if ${className}Dto.BeginTime != "" && ${className}Dto.EndTime != "" {
-    query = query.Where("create_time BETWEEN ? AND ?", ${className}Dto.BeginTime, ${className}Dto.EndTime)
+    if !satrtTime.IsZero() {
+        query = query.Where("create_time >= ?", satrtTime)
+    }
+    if !endTime.IsZero() {
+        query = query.Where("create_time <= ?", endTime)
     }
 
     // 查询总数
@@ -365,8 +367,6 @@ func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *
     }
 
     // 分页参数默认值
-    pageNum := ${className}Dto.PageNum
-    pageSize := ${className}Dto.PageSize
     if pageNum <= 0 {
         pageNum = 1
     }
@@ -375,9 +375,10 @@ func (this *${ClassName}) Get${ClassName}PageList(DB *gorm.DB, ${className}Dto *
     }
 
     // 分页数据
+    // todo update create_time
     err := query.
         Limit(pageSize).Offset((pageNum - 1) * pageSize).
-        Order("created_at desc").
+        Order("create_time desc").
         Find(&${className}s).Error
 
     if err != nil {

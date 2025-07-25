@@ -146,7 +146,7 @@ public class VelocityUtils
         templates.add("vm/go/service.go.vm");
         templates.add("vm/go/api.go.vm");
         templates.add("vm/go/router.go.vm");
-        templates.add("vm/go/JsonResult.go.vm");
+        templates.add("vm/go/commonUtils.go.vm");
         templates.add("vm/xml/mapper.xml.vm");
         templates.add("vm/sql/sql.vm");
         templates.add("vm/js/api.js.vm");
@@ -213,19 +213,19 @@ public class VelocityUtils
         }
         else if (template.contains("modelDto.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/dto/{}ModelDto.go", goPath, className);
+            fileName = StringUtils.format("{}/model/{}ModelDto.go", goPath, className);
         }
         else if (template.contains("modelVo.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/vo/{}ModelVo.go", goPath, className);
+            fileName = StringUtils.format("{}/model/{}ModelVo.go", goPath, className);
         }
         else if (template.contains("service.go.vm"))
         {
             fileName = StringUtils.format("{}/service/{}Service.go", goPath, className);
         }
-        else if (template.contains("JsonResult.go.vm"))
+        else if (template.contains("commonUtils.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/common/JsonResult.go", goPath);
+            fileName = StringUtils.format("{}/utils/commonUtils/commonUtils.go", goPath);
         }
         else if (template.contains("api.go.vm"))
         {

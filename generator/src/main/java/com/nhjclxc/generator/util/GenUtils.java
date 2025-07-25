@@ -7,6 +7,7 @@ import com.nhjclxc.generator.model.GenTableColumn;
 import org.apache.commons.lang3.RegExUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
@@ -30,6 +31,11 @@ public class GenUtils
         genTable.setCreateBy(operName);
         genTable.setGenType("0");
     }
+
+    private static final List<String> LIKE_SUFFIXES = Arrays.asList(
+            "name", "label", "comment", "title", "desc", "description",
+            "content", "remark", "summary", "keywords", "intro", "introduction", "value"
+    );
 
     /**
      * 初始化列属性字段
@@ -101,7 +107,17 @@ public class GenUtils
         }
 
         // 查询字段类型
-        if (StringUtils.endsWithIgnoreCase(columnName, "name") || StringUtils.endsWithIgnoreCase(columnName, "label"))
+//        if (StringUtils.endsWithIgnoreCase(columnName, "name")
+//                || StringUtils.endsWithIgnoreCase(columnName, "label")
+//                || StringUtils.endsWithIgnoreCase(columnName, "comment")
+//                || StringUtils.endsWithIgnoreCase(columnName, "comment")
+//                || StringUtils.endsWithIgnoreCase(columnName, "title")
+//                || StringUtils.endsWithIgnoreCase(columnName, "summary")
+//                || StringUtils.endsWithIgnoreCase(columnName, "keywords")
+//                || StringUtils.endsWithIgnoreCase(columnName, "desc") || StringUtils.endsWithIgnoreCase(columnName, "description")
+//                || StringUtils.endsWithIgnoreCase(columnName, "intro") || StringUtils.endsWithIgnoreCase(columnName, "introduction")
+//                || StringUtils.endsWithIgnoreCase(columnName, "remark") )
+        if (LIKE_SUFFIXES.stream().anyMatch(suffix -> StringUtils.endsWithIgnoreCase(columnName, suffix)))
         {
             column.setQueryType(GenConstants.QUERY_LIKE);
         }

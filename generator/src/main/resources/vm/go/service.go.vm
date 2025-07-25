@@ -1,38 +1,33 @@
 package service
 
-import (
-    "gorm.io/gorm"
-)
-
 
 // ${ClassName}Service ${functionName} Service 层
 type ${ClassName}Service struct {
-    DB *gorm.DB
 }
 
 // Insert${ClassName} 新增${functionName}
 func (this *${ClassName}Service) Insert${ClassName}(${className} *model.${ClassName}) (res any, err error) {
 
-    return ${className}.Insert${ClassName}(this.DB)
+    return ${className}.Insert${ClassName}(core.GLOBAL_DB)
 }
 
 // Update${ClassName} 修改${functionName}
 func (this *${ClassName}Service) Update${ClassName}(${className} *model.${ClassName}) (res any, err error) {
 
-    return ${className}.Update${ClassName}By${pkColumn.capJavaField}(this.DB)
+    return ${className}.Update${ClassName}By${pkColumn.capJavaField}(core.GLOBAL_DB)
 }
 
 // Delete${ClassName} 删除${functionName}
 func (this *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (res any, err error) {
 
-    return (&model.${ClassName}{}).Delete${ClassName}(this.DB, ${pkColumn.javaField}List)
+    return (&model.${ClassName}{}).Delete${ClassName}(core.GLOBAL_DB, ${pkColumn.javaField}List)
 }
 
 // Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}业务详细信息
 func (this *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (res any, err error) {
 
     ${className} := model.${ClassName}{}
-    err = (&${className}).Get${ClassName}By${pkColumn.capJavaField}(this.DB, ${pkColumn.javaField})
+    err = (&${className}).Find${ClassName}By${pkColumn.capJavaField}(core.GLOBAL_DB, ${pkColumn.javaField})
     if err != nil {
         return nil, err
     }
@@ -43,7 +38,8 @@ func (this *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkC
 // Get${ClassName}List 查询${functionName}业务列表
 func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
 
-    ${className}List, err := (&model.${ClassName}{}).Get${ClassName}List(this.DB, ${className}Dto)
+    ${className}, err := ${className}Dto.DtoToModel()
+    ${className}List, err := ${className}.Find${ClassName}List(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime)
     if err != nil {
         return nil, err
     }
@@ -54,25 +50,21 @@ func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${Clas
 // Get${ClassName}PageList 分页查询${functionName}业务列表
 func (this *${ClassName}Service) Get${ClassName}PageList(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
 
-    ${className}List, total, err := (&model.${ClassName}{}).Get${ClassName}PageList(this.DB, ${className}Dto)
+    ${className}, err := ${className}Dto.DtoToModel()
+    ${className}List, total, err := ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, ${className}Dto.PageSize, ${className}Dto.PageNum)
     if err != nil {
         return nil, err
     }
 
-    return map[string]any{
-        "list":     ${className}List,
-        "total":    total,
-        "pageNum":  ${className}Dto.PageNum,
-        "pageSize": ${className}Dto.PageSize,
-    }, nil
+    return commonUtils.BuildPageData[model.${ClassName}](${className}List, total, ${className}Dto.PageNum, ${className}Dto.PageSize), nil
 }
 
 // Export${ClassName} 导出${functionName}业务列表
 func (this *${ClassName}Service) Export${ClassName}(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
 
-    (&model.${ClassName}{}).Get${ClassName}PageList(this.DB, ${className}Dto)
+    ${className}, err := ${className}Dto.DtoToModel()
+    ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, 1, 10000)
     // 实现导出 ...
 
     return nil, nil
 }
-
