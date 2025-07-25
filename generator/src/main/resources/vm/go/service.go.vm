@@ -51,7 +51,7 @@ func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${Clas
 func (this *${ClassName}Service) Get${ClassName}PageList(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
 
     ${className}, err := ${className}Dto.DtoToModel()
-    ${className}List, total, err := ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, ${className}Dto.PageSize, ${className}Dto.PageNum)
+    ${className}List, total, err := ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, ${className}Dto.PageNum, ${className}Dto.PageSize)
     if err != nil {
         return nil, err
     }
