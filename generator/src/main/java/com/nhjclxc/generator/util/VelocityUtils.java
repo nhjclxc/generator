@@ -147,6 +147,9 @@ public class VelocityUtils
         templates.add("vm/go/api.go.vm");
         templates.add("vm/go/router.go.vm");
         templates.add("vm/go/commonUtils.go.vm");
+        templates.add("vm/go/joinExample/one2One.go.vm");
+        templates.add("vm/go/joinExample/one2Many.go.vm");
+        templates.add("vm/go/joinExample/many2Many.go.vm");
         templates.add("vm/xml/mapper.xml.vm");
         templates.add("vm/sql/sql.vm");
         templates.add("vm/js/api.js.vm");
@@ -234,6 +237,18 @@ public class VelocityUtils
         else if (template.contains("router.go.vm"))
         {
             fileName = StringUtils.format("{}/router/{}Router.go", goPath, className);
+        }
+        else if (template.contains("one2One.go.vm"))
+        {
+            fileName = StringUtils.format("{}/joinExample/one2One.go", goPath);
+        }
+        else if (template.contains("one2Many.go.vm"))
+        {
+            fileName = StringUtils.format("{}/joinExample/one2Many.go", goPath);
+        }
+        else if (template.contains("many2Many.go.vm"))
+        {
+            fileName = StringUtils.format("{}/joinExample/many2Many.go", goPath);
         }
         else if (template.contains("mapper.xml.vm"))
         {

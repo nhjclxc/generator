@@ -1,0 +1,67 @@
+package joinExample
+
+import (
+    "github.com/gin-gonic/gin"
+)
+
+/*
+
+CREATE TABLE tab_user
+(
+    id       BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户id',
+    username VARCHAR(100) COMMENT '用户名'
+);
+
+CREATE TABLE tab_user_order
+(
+    id       BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '订单id',
+    user_id  BIGINT COMMENT '用户id',
+    order_no VARCHAR(100) COMMENT '订单编号',
+    amount   VARCHAR(11) COMMENT '订单金额',
+    FOREIGN KEY (user_id) REFERENCES tab_user (id)
+);
+
+INSERT INTO tab_user_order (id, user_id, order_no, amount) VALUES (1, 1, '12345678', '11.12');
+INSERT INTO tab_user_order (id, user_id, order_no, amount) VALUES (2, 1, '23456789', '22.23');
+INSERT INTO tab_user_order (id, user_id, order_no, amount) VALUES (3, 1, '34567890', '33.36');
+INSERT INTO tab_user_order (id, user_id, order_no, amount) VALUES (4, 2, '98765432', '66.56');
+INSERT INTO tab_user_order (id, user_id, order_no, amount) VALUES (5, 2, '87654321', '55.85');
+
+
+*/
+
+
+// User 用户结构体
+type User struct {
+    Id       uint64      `gorm:"column:id;primaryKey;autoIncrement" json:"id"`  // 用户id
+    Username string      `gorm:"column:username" json:"username"`               // 用户名
+    Orders   []UserOrder `gorm:"foreignKey:UserId;references:Id" json:"orders"` // 一对多关联
+}
+
+func (User) TableName() string {
+    return "tab_user"
+}
+
+// UserOrder 用户订单结构体
+type UserOrder struct {
+    Id      uint64 `gorm:"column:id;primaryKey;autoIncrement" json:"id"`
+    UserId  uint64 `gorm:"column:user_id;index" json:"user_id"`
+    OrderNo string `gorm:"column:order_no" json:"order_no"`
+    Amount  string `gorm:"column:amount" json:"amount"`
+}
+
+func (UserOrder) TableName() string {
+    return "tab_user_order"
+}
+
+// GetUserWithOrders 根据用户id获取用户信息和用户所有订单信息
+func GetUserWithOrders(db *gorm.DB, userId uint64) (*User, error) {
+    var user User
+    err := db.Preload("Orders").First(&user, "id = ?", userId).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
+}
+
+

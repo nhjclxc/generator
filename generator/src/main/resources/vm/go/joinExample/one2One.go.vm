@@ -1,0 +1,70 @@
+package joinExample
+
+import (
+    "github.com/gin-gonic/gin"
+)
+
+/*
+
+CREATE TABLE tab_user
+(
+    id  BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '用户id',
+    username VARCHAR(100) COMMENT '用户名'
+);
+
+CREATE TABLE tab_user_detail
+(
+    user_id BIGINT UNIQUE COMMENT '用户id', -- 一对一，user_id 唯一
+    address VARCHAR(255) COMMENT '用户地址',
+    phone   VARCHAR(50) COMMENT '用户手机号',
+    FOREIGN KEY (user_id) REFERENCES tab_user (id)
+);
+
+INSERT INTO tab_user (id, username) VALUES (1, 'zhangsan');
+INSERT INTO tab_user (id, username) VALUES (2, 'lisi');
+INSERT INTO tab_user (id, username) VALUES (3, 'wangwu');
+INSERT INTO tab_user_detail (user_id, address, phone) VALUES (1, 'zhangsan地址', 'zhangsan手机号');
+INSERT INTO tab_user_detail (user_id, address, phone) VALUES (2, 'lisi地址', 'lisi手机号');
+INSERT INTO tab_user_detail (user_id, address, phone) VALUES (3, 'wangwu地址', 'wangwu手机号');
+
+
+select *
+from tab_user tu
+left join tab_user_detail tud on tu.user_id = tud.user_id
+;
+
+*/
+
+
+// User 用户结构体
+type User struct {
+    Id         uint64     `gorm:"column:id;primaryKey;autoIncrement" json:"id"`      // 用户id
+    Username   string     `gorm:"column:username" json:"username"`                   // 用户名
+    UserDetail UserDetail `gorm:"foreignKey:UserId;references:Id" json:"userDetail"` // 一对一关联
+}
+
+func (User) TableName() string {
+    return "tab_user"
+}
+
+// UserDetail 用户详细结构体
+type UserDetail struct {
+    UserId  uint64 `gorm:"column:user_id;unique;not null" json:"userId"` // 与主表建立一对一关联
+    Address string `gorm:"column:address" json:"address"`                // 用户地址
+    Phone   string `gorm:"column:phone" json:"phone"`                    // 用户手机号
+}
+
+func (UserDetail) TableName() string {
+    return "tab_user_detail"
+}
+
+// GetUserWithDetail 根据用户id获取用户信息和用户详细信息
+func GetUserWithDetail(db *gorm.DB, userId uint64) (*User, error) {
+    var user User
+    err := db.Preload("UserDetail").First(&user, "id = ?", userId).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
+}
+

@@ -1,5 +1,6 @@
 package com.nhjclxc.generator.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.github.pagehelper.PageInfo;
 import com.nhjclxc.generator.model.ContextHolder;
 import com.nhjclxc.generator.model.GenTable;
@@ -44,6 +45,7 @@ public class GeneratorController {
         // 关闭上一个连接，防止一个浏览器客户端不断发起连接请求的情况，导致连接数不断增加
         String preSessionUuid = request.getHeader(ContextHolder.Authorization);
         System.out.println("preSessionUuid" + preSessionUuid);
+        System.out.println("connect.jdbcObject" + JSON.toJSONString(jdbcObject));
         boolean b = generatorService.removeSessionUuid(preSessionUuid);
 
         String sessionUuid = generatorService.connect(jdbcObject);
