@@ -1,0 +1,299 @@
+package repository
+
+import (
+    "errors"
+    "gorm.io/gorm"
+    "log/slog"
+    "time"
+)
+
+// ${ClassName}Repository ${functionName} 结构体持久层
+// @author ${author}
+// @date ${datetime}
+type ${ClassName}Repository struct {
+    db *gorm.DB
+}
+
+// New${ClassName}Repository 创建 ${ClassName} ${functionName} 持久层对象
+func New${ClassName}Repository(db *gorm.DB) *${ClassName}Repository {
+    return &${ClassName}Repository{
+        db: db,
+    }
+}
+
+// 由于有时需要开启事务，因此 DB *gorm.DB 可以选择从外部传入
+
+// Insert${ClassName} 新增${functionName}
+func (${goReceiverName}r *${ClassName}Repository) Insert${ClassName}(${className} model.${ClassName}) (int, error) {
+    slog.Info("${ClassName}Repository.Insert${ClassName}：", slog.Any("${className}", ${className}))
+
+    // 先查询是否有相同 name 的数据存在
+    temp := &model.${ClassName}{}
+    // todo update name
+    tx := ${goReceiverName}r.db.Where("name = ?", ${className}.?).First(temp)
+    slog.Info("Insert${ClassName}.Where Unique：", slog.Any("temp", temp))
+    if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+        return 0, errors.New("${ClassName}Repository.Insert${ClassName}.Where, 存在相同 name: " + temp.?)
+    }
+
+    // 执行 Insert
+    err := ${goReceiverName}r.db.Create(&${className}).Error
+
+    if err != nil {
+        return 0, errors.New("${ClassName}Repository.Insert${ClassName}.${goReceiverName}r.db.Create, 新增失败: " + err.Error())
+    }
+    return 1, nil
+}
+
+// BatchInsert${ClassName}s 批量新增${functionName}
+func (${goReceiverName}r *${ClassName}Repository) BatchInsert${ClassName}s(${className}s []model.${ClassName}) (int, error) {
+    slog.Info("${ClassName}Repository.BatchInsert${ClassName}s：", slog.Any("${className}s", ${className}s))
+
+    result := ${goReceiverName}r.db.Create(&${className}s)
+    if result.Error != nil {
+        return 0, errors.New("${ClassName}Repository.BatchInsert${ClassName}s.Create, 新增失败: " + result.Error.Error())
+    }
+    return int(result.RowsAffected), nil
+}
+
+// Update${ClassName}By${pkColumn.capJavaField} 根据主键修改${functionName}的所有字段
+func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}(${className} model.${ClassName}) (int, error) {
+    slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}：", slog.Any("${className}", ${className}))
+
+    // 1、查询该${pkColumn.capJavaField}是否存在
+    if ${className}.${pkColumn.capJavaField} == 0 {
+        return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField} ${pkColumn.capJavaField} 不能为空！！！: ")
+    }
+
+    // 2、再看看name是否重复
+    temp := &model.${ClassName}{}
+    // todo update name
+    tx := ${goReceiverName}r.db.Where("name = ?", ${className}.?).First(temp)
+    slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField} Unique：", slog.Any("temp", temp))
+    if !errors.Is(tx.Error, gorm.ErrRecordNotFound) && temp.${pkColumn.capJavaField} != ${className}.${pkColumn.capJavaField} {
+        return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Where, 存在相同 name: " + temp.?)
+    }
+
+    // 3、执行修改
+    //保存整个结构体（全字段更新）
+    saveErr := ${goReceiverName}r.db.Save(${className}).Error
+    if saveErr != nil {
+        return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: " + saveErr.Error())
+    }
+    return 1, nil
+}
+
+// Update${ClassName}Selective 修改${functionName}不为默认值的字段
+func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${className} model.${ClassName}) (int, error) {
+    slog.Info("${ClassName}Repository.Update${ClassName}Selective：", slog.Any("${className}", ${className}))
+
+    // ${goReceiverName}r.db.Model().Updates()：只更新指定字段
+    err := ${goReceiverName}r.db.Model(model.${ClassName}{}).
+    Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).Updates(${className}).Error
+    if err != nil {
+        return 0, errors.New("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: " + err.Error())
+    }
+
+    return 1, nil
+}
+
+// BatchUpdate${ClassName}Selective 批量修改${functionName}
+func (${goReceiverName}r *${ClassName}Repository) BatchUpdate${ClassName}Selective(${className}s []model.${ClassName}) error {
+    return ${goReceiverName}r.db.Transaction(func(tx *gorm.DB) error {
+        for _, v := range ${className}s {
+            err := tx.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} = ?", v.${pkColumn.capJavaField}).Updates(v).Error
+            if err != nil {
+                return err // 触发回滚
+            }
+        }
+        return nil // 提交事务
+    })
+}
+
+// BatchDelete${ClassName}ByState 批量软删除 ${functionName}
+func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}ByState(${pkColumn.javaField}List []int64) error {
+    slog.Info("${ClassName}Repository.BatchDelete${ClassName}ByState：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
+
+    return ${goReceiverName}r.db.Model(&model.${ClassName}{}).
+        Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).
+        Updates(map[string]any{
+            "state":      0,
+            "deleted_at": time.Now(),
+        }).Error
+}
+
+// BatchDelete${ClassName} 根据主键批量删除 ${functionName}
+func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}(${pkColumn.javaField}List []int64) (int, error) {
+    slog.Info("${ClassName}Repository.BatchDelete${ClassName}：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
+
+    // 当存在DeletedAt gorm.DeletedAt字段时为软删除，否则为物理删除
+    result := ${goReceiverName}r.db.Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&model.${ClassName}{})
+    // result := ${goReceiverName}r.db.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Update("state", 0)
+    if result.Error != nil {
+        return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+    }
+
+    //// 以下使用的是物理删除
+    //result := ${goReceiverName}r.db.Unscoped().Delete(&model.${ClassName}{}, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
+    //if result.Error != nil {
+    //	return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+    //}
+
+    return int(result.RowsAffected), nil
+}
+
+// Find${ClassName}By${pkColumn.capJavaField} 获取${functionName}详细信息
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (model.${ClassName}, error) {
+    slog.Info("${ClassName}Repository.Find${ClassName}By${pkColumn.capJavaField}：", slog.Any("${pkColumn.javaField}", ${pkColumn.javaField}))
+
+    ${className} := model.${ClassName}{}
+    err := ${goReceiverName}r.db.First(&${className}, "${pkColumn.columnName} = ?", ${pkColumn.javaField}).Error
+    return ${className}, err
+}
+
+// Find${ClassName}sBy${pkColumn.capJavaField}List 根据主键批量查询${functionName}详细信息
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}sBy${pkColumn.capJavaField}List(${pkColumn.javaField}List []int64) ([]model.${ClassName}, error) {
+    slog.Info("${ClassName}Repository.Find${ClassName}sBy${pkColumn.capJavaField}List：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
+
+    var result []model.${ClassName}
+    err := ${goReceiverName}r.db.Where("${pkColumn.javaField} IN ?", ${pkColumn.javaField}List).Find(&result).Error
+    return result, err
+}
+
+// Find${ClassName}List 查询${functionName}列表
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${className} model.${ClassName}, satrtTime time.Time, endTime time.Time) ([]model.${ClassName}, error) {
+    slog.Info("${ClassName}Repository.Find${ClassName}List：", slog.Any("${className}", ${className}))
+
+    var ${className}s []model.${ClassName}
+    query := ${goReceiverName}r.db.Model(&model.${ClassName}{})
+
+        // 构造查询条件
+#foreach($column in $columns)
+    #set($queryType=$column.queryType)
+    #set($javaField=$column.javaField)
+    #set($javaType=$column.javaType)
+    #set($columnName=$column.columnName)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    #if($column.query)
+        #set($tags = "=")
+        #if($column.queryType == "EQ")
+            #set($tags = "=")
+        #elseif($queryType == "NE")
+            #set($tags = "!=")
+        #elseif($queryType == "GT")
+            #set($tags = ">")
+        #elseif($queryType == "GTE")
+            #set($tags = ">=")
+        #elseif($queryType == "LT")
+            #set($tags = "<")
+        #elseif($queryType == "LTE")
+            #set($tags = "<=")
+        #elseif($queryType == "LIKE")
+            #set($tags = "LIKE")
+        #elseif($queryType == "BETWEEN")
+        #end
+        #if($column.goType == 'time.Time')
+        if !${className}.${column.goField}.IsZero() {
+            query = query.Where("$columnName $tags ?", ${className}.$column.goField)
+            // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
+        }
+        #else
+        if ${className}.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
+        #end
+    #end
+#end
+
+    if !satrtTime.IsZero() {
+        query = query.Where("create_time >= ?", satrtTime)
+    }
+    if !endTime.IsZero() {
+        query = query.Where("create_time <= ?", endTime)
+    }
+
+    // // 添加分页逻辑
+    // if ${className}.PageNum > 0 && ${className}.PageSize > 0 {
+    //     offset := (${className}.PageNum - 1) * ${className}.PageSize
+    //     query = query.Offset(offset).Limit(${className}.PageSize)
+    // }
+
+    err := query.Find(&t${className}s).Error
+    return ${className}s, err
+}
+
+// Find${ClassName}PageList 分页查询${functionName}列表
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${className} model.${ClassName}, satrtTime time.Time, endTime time.Time, pageNum int, pageSize int) ([]model.${ClassName}, int64, error) {
+    slog.Info("${ClassName}Repository.Find${ClassName}PageList：", slog.Any("${className}", ${className}))
+
+    var (
+        ${className}s []model.${ClassName}
+        total     int64
+    )
+
+    query := ${goReceiverName}r.db.Model(&model.${ClassName}{})
+
+// 构造查询条件
+#foreach($column in $columns)
+    #set($queryType=$column.queryType)
+    #set($javaField=$column.javaField)
+    #set($javaType=$column.javaType)
+    #set($columnName=$column.columnName)
+    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
+    #if($column.query)
+        #set($tags = "=")
+        #if($column.queryType == "EQ")
+            #set($tags = "=")
+        #elseif($queryType == "NE")
+            #set($tags = "!=")
+        #elseif($queryType == "GT")
+            #set($tags = ">")
+        #elseif($queryType == "GTE")
+            #set($tags = ">=")
+        #elseif($queryType == "LT")
+            #set($tags = "<")
+        #elseif($queryType == "LTE")
+            #set($tags = "<=")
+        #elseif($queryType == "LIKE")
+            #set($tags = "LIKE")
+        #elseif($queryType == "BETWEEN")
+        #end
+        #if($column.goType == 'time.Time')
+        if !${className}.${column.goField}.IsZero() {
+            query = query.Where("$columnName $tags ?", ${className}.$column.goField)
+            // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
+        }
+        #else
+        if ${className}.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
+        #end
+    #end
+#end
+
+    if !satrtTime.IsZero() {
+        query = query.Where("create_time >= ?", satrtTime)
+    }
+    if !endTime.IsZero() {
+        query = query.Where("create_time <= ?", endTime)
+    }
+
+    // 分页参数默认值
+    if pageNum <= 0 {
+        pageNum = 1
+    }
+    if pageSize <= 0 {
+        pageSize = 10
+    }
+
+    // 分页数据
+    // todo update create_time
+    err := query.
+        Count(&total).Order("create_time desc").
+        Limit(pageSize).Offset((pageNum - 1) * pageSize).
+        Order("create_time desc").
+        Find(&${className}s).Error
+
+    if err != nil {
+        return nil, 0, err
+    }
+
+    return ${className}s, total, nil
+}
+

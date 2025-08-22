@@ -9,7 +9,7 @@ import (
     "time"
 )
 
-// ${ClassName} ${functionName} 结构体
+// ${ClassName} ${functionName}结构体
 // @author ${author}
 // @date ${datetime}
 type ${ClassName} struct {
@@ -53,7 +53,7 @@ type ${ClassName} struct {
     ##    #set($void = $tags.add("comment:$column.columnComment"))
     ###end
 ###set($gormTag = $tags.join(";"))
-$column.goField $column.goType `gorm:"$tags" json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
+    $column.goField $column.goType `gorm:"$tags" json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
 #end
 #end
 
@@ -68,10 +68,12 @@ $column.goField $column.goType `gorm:"$tags" json:"$column.javaField" form:"$col
     DeletedBy uint64 `gorm:"column:deleted_by;type:bigint" json:"deletedBy"` // 删除人id
 
     CreatedAt time.Time `gorm:"column:created_at;type:datetime" json:"createdAt"` // 创建时间
+    CreatedTime time.Time `gorm:"column:created_time;type:datetime" json:"createdTime"` // 创建时间
 
     CreatedBy uint64 `gorm:"column:created_by;type:bigint" json:"createdBy"` // 创建人id
 
     UpdatedAt time.Time `gorm:"column:updated_at;type:datetime" json:"updatedAt"` // 更新时间
+    UpdatedTime time.Time `gorm:"column:updated_time;type:datetime" json:"updatedTime"` // 更新时间
 
     UpdatedBy uint64 `gorm:"column:updated_by;type:bigint" json:"updatedBy"` // 更新人id
 
@@ -79,23 +81,36 @@ $column.goField $column.goType `gorm:"$tags" json:"$column.javaField" form:"$col
 }
 
 // TableName 返回当前实体类的表名
-func (this *${ClassName}) TableName() string {
+func (${goReceiverName} *${ClassName}) TableName() string {
     return "${tableName}"
 }
 
+// CreateTable 根据结构体里面的gorm信息创建表结构
+func (${goReceiverName} *${ClassName}) CreateTable(tx *gorm.DB) error {
+    tableName := ${goReceiverName}.TableName()
+    if !tx.Migrator().HasTable(tableName) {
+        err := tx.Table(tableName).Migrator().CreateTable(&${ClassName}{})
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
 
-// 可用钩子函数包括：
-// BeforeCreate / AfterCreate
-// BeforeUpdate / AfterUpdate
-// BeforeDelete / AfterDelete
-func (this *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
-    this.CreateTime = time.Now()
-    this.UpdateTime = time.Now()
+// 可用钩子函数包括：BeforeCreate / AfterCreate、BeforeUpdate / AfterUpdate、BeforeDelete / AfterDelete
+// BeforeCreate 在插入数据之前执行的操作
+func (${goReceiverName} *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
+    if err = ${goReceiverName}.CreateTable(tx); err != nil {
+        return err
+    }
+
+    ${goReceiverName}.CreatedTime = time.Now()
+    ${goReceiverName}.UpdatedTime = time.Now()
     return
 }
 
-func (this *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
-    this.UpdateTime = time.Now()
+func (${goReceiverName} *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
+    ${goReceiverName}.UpdatedTime = time.Now()
     return
 }
 
@@ -104,18 +119,33 @@ func MapTo${ClassName}(inputMap map[string]any) (*${ClassName}) {
     //go get github.com/mitchellh/mapstructure
 
     var ${className} ${ClassName}
-    err := mapstructure.Decode(inputMap, &${className})
+    decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+        DecodeHook: mapstructure.ComposeDecodeHookFunc(
+            func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
+                if from.Kind() == reflect.String && to == reflect.TypeOf(time.Time{}) {
+                    return time.Parse("2006-01-02 15:04:05", data.(string))
+                }
+                return data, nil
+            },
+        ),
+        Result: &${className},
+    })
     if err != nil {
+        fmt.Printf("MapToStruct Decode NewDecoder error: %v", err)
+        panic(err)
+    }
+
+    if err := decoder.Decode(inputMap); err != nil {
         fmt.Printf("MapToStruct Decode error: %v", err)
-        return nil
     }
     return &${className}
 }
 
 // ${ClassName}ToMap 当前结构体转化为map映射
-func (this *${ClassName}) ${ClassName}ToMap() (map[string]any) {
-    var m map[string]any
-    bytes, err := json.Marshal(this)
+func (${goReceiverName} *${ClassName}) ${ClassName}ToMap() (map[string]any) {
+    // 先转成 map
+    m := make(map[string]any)
+    bytes, err := json.Marshal(${goReceiverName})
     if err != nil {
         fmt.Printf("StructToMap marshal error: %v", err)
         return nil
@@ -126,9 +156,34 @@ func (this *${ClassName}) ${ClassName}ToMap() (map[string]any) {
         fmt.Printf("StructToMap unmarshal error: %v", err)
         return nil
     }
+
+    // 格式化所有 time.Time
+    for k, v := range m {
+        if t, ok := v.(string); ok && len(t) > 10 && strings.Contains(t, "T") {
+            // 尝试解析 RFC3339，再格式化
+            if parsed, err := time.Parse(time.RFC3339, t); err == nil {
+                m[k] = parsed.Format("2006-01-02 15:04:05")
+            }
+        }
+    }
+
     return m
 }
 
+
+// 东八区
+var cstZone = func() *time.Location {
+    loc, err := time.LoadLocation("Asia/Shanghai")
+    if err != nil {
+        return time.FixedZone("CST", 8*3600)
+    }
+    return loc
+}()
+
+// 获取东八区时间
+func getNow() time.Time {
+    return time.Now().In(cstZone)
+}
 
 
 // 由于有时需要开启事务，因此 DB *gorm.DB 选择从外部传入
@@ -361,11 +416,6 @@ func (this *${ClassName}) Find${ClassName}PageList(DB *gorm.DB, satrtTime time.T
         query = query.Where("create_time <= ?", endTime)
     }
 
-    // 查询总数
-    if err := query.Count(&total).Error; err != nil {
-        return nil, 0, err
-    }
-
     // 分页参数默认值
     if pageNum <= 0 {
         pageNum = 1
@@ -377,6 +427,7 @@ func (this *${ClassName}) Find${ClassName}PageList(DB *gorm.DB, satrtTime time.T
     // 分页数据
     // todo update create_time
     err := query.
+        Count(&total).Order("create_time desc").
         Limit(pageSize).Offset((pageNum - 1) * pageSize).
         Order("create_time desc").
         Find(&${className}s).Error

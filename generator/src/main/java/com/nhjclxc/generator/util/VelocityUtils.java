@@ -44,7 +44,7 @@ public class VelocityUtils
         VelocityContext velocityContext = new VelocityContext();
         velocityContext.put("tplCategory", genTable.getTplCategory());
         velocityContext.put("tableName", genTable.getTableName());
-        velocityContext.put("functionName", StringUtils.isNotEmpty(functionName) ? functionName : "【请填写功能名称】");
+        velocityContext.put("functionName", StringUtils.isNotEmpty(functionName) ? functionName+" " : genTable.getClassName());
         velocityContext.put("ClassName", genTable.getClassName());
         velocityContext.put("className", StringUtils.uncapitalize(genTable.getClassName()));
         velocityContext.put("moduleName", genTable.getModuleName());
@@ -62,6 +62,9 @@ public class VelocityUtils
         velocityContext.put("dicts", getDicts(genTable));
         velocityContext.put("enableSwagger", GenConfig.enableSwagger);
         velocityContext.put("enableLombok", GenConfig.enableLombok);
+        // go结构体对象的接收者变量 goReceiverName
+        velocityContext.put("goReceiverName", StringUtils.toGoVarName(genTable.getClassName()));
+
         setMenuVelocityContext(velocityContext, genTable);
         if (GenConstants.TPL_TREE.equals(tplCategory))
         {
@@ -141,12 +144,13 @@ public class VelocityUtils
         templates.add("vm/java/serviceImpl.java.vm");
         templates.add("vm/java/controller.java.vm");
         templates.add("vm/go/model.go.vm");
-        templates.add("vm/go/modelDto.go.vm");
-        templates.add("vm/go/modelVo.go.vm");
+        templates.add("vm/go/model_req.go.vm");
+        templates.add("vm/go/model_resp.go.vm");
+        templates.add("vm/go/repository.go.vm");
         templates.add("vm/go/service.go.vm");
-        templates.add("vm/go/api.go.vm");
+        templates.add("vm/go/controller.go.vm");
         templates.add("vm/go/router.go.vm");
-        templates.add("vm/go/commonUtils.go.vm");
+        templates.add("vm/go/common_utils.go.vm");
         templates.add("vm/go/joinExample/one2One.go.vm");
         templates.add("vm/go/joinExample/one2Many.go.vm");
         templates.add("vm/go/joinExample/many2Many.go.vm");
@@ -212,31 +216,35 @@ public class VelocityUtils
         }
         else if (template.contains("model.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/{}Model.go", goPath, className);
+            fileName = StringUtils.format("{}/entity/model/{}", goPath, StringUtils.toUnderScoreCase(className + "_model.go"));
         }
-        else if (template.contains("modelDto.go.vm"))
+        else if (template.contains("model_req.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/{}ModelDto.go", goPath, className);
+            fileName = StringUtils.format("{}/entity/req/{}", goPath, StringUtils.toUnderScoreCase(className + "_model_req.go"));
         }
-        else if (template.contains("modelVo.go.vm"))
+        else if (template.contains("model_resp.go.vm"))
         {
-            fileName = StringUtils.format("{}/model/{}ModelVo.go", goPath, className);
+            fileName = StringUtils.format("{}/entity/resp/{}", goPath, StringUtils.toUnderScoreCase(className + "_model_resp.go"));
+        }
+        else if (template.contains("repository.go.vm"))
+        {
+            fileName = StringUtils.format("{}/repository/{}", goPath, StringUtils.toUnderScoreCase(className + "_repository.go"));
         }
         else if (template.contains("service.go.vm"))
         {
-            fileName = StringUtils.format("{}/service/{}Service.go", goPath, className);
+            fileName = StringUtils.format("{}/service/{}", goPath, StringUtils.toUnderScoreCase(className + "_service.go"));
         }
-        else if (template.contains("commonUtils.go.vm"))
+        else if (template.contains("controller.go.vm"))
         {
-            fileName = StringUtils.format("{}/utils/commonUtils/commonUtils.go", goPath);
-        }
-        else if (template.contains("api.go.vm"))
-        {
-            fileName = StringUtils.format("{}/api/{}Api.go", goPath, className);
+            fileName = StringUtils.format("{}/controller/{}", goPath, StringUtils.toUnderScoreCase(className + "_controller.go"));
         }
         else if (template.contains("router.go.vm"))
         {
-            fileName = StringUtils.format("{}/router/{}Router.go", goPath, className);
+            fileName = StringUtils.format("{}/router/{}", goPath, StringUtils.toUnderScoreCase(className + "_router.go"));
+        }
+        else if (template.contains("common_utils.go.vm"))
+        {
+            fileName = StringUtils.format("{}/utils/common_utils.go", goPath);
         }
         else if (template.contains("one2One.go.vm"))
         {

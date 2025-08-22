@@ -3,6 +3,8 @@ package com.nhjclxc.generator.util;
 import org.springframework.util.AntPathMatcher;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 字符串工具类
@@ -617,5 +619,45 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
             }
         }
         return sb.toString();
+    }
+
+
+    // 局部变量名（全小写缩写）
+    public static String toGoVarName(String str) {
+        StringBuilder sb = new StringBuilder();
+        Matcher m = Pattern.compile(
+                "([A-Z]+(?=[A-Z][a-z0-9])|[A-Z]?[a-z0-9]+|[A-Z]+|\\d+)"
+        ).matcher(str);
+
+        while (m.find()) {
+            String word = m.group();
+            // 局部变量名：全部小写缩写，取首字母
+            sb.append(Character.toLowerCase(word.charAt(0)));
+        }
+        return sb.toString();
+    }
+
+    public static void main(String[] args) {
+
+        String[] examples = {
+                "CronTaskManager",
+                "UploadClient",
+                "User",
+                "XMLHttpRequest",
+                "UserIDManager",
+                "HTTPRequest",
+                "JSONParser",
+                "DBConnection",
+                "CPUUsageMonitor",
+                "UserV2Manager",
+                "Version3Update",
+                "IPAddressConfig",
+                "MySQLDatabaseConnector"
+        };
+
+        System.out.println("局部变量名（全小写）：");
+        for (String s : examples) {
+            System.out.println(s + " -> " + toGoVarName(s));
+        }
     }
 }

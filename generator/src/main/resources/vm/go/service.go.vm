@@ -3,31 +3,41 @@ package service
 
 // ${ClassName}Service ${functionName} Service 层
 type ${ClassName}Service struct {
+    db                           *gorm.DB
+    ${className}Repository *repository.${ClassName}Repository
+}
+
+// New${ClassName}Service 创建 ${ClassName} ${functionName} 业务层对象
+func New${ClassName}Service(db *gorm.DB, ${className}Repository *repository.${ClassName}Repository) *${ClassName}Service {
+    return &${ClassName}Service{
+        db:                           db,
+        ${className}Repository: ${className}Repository,
+    }
 }
 
 // Insert${ClassName} 新增${functionName}
-func (this *${ClassName}Service) Insert${ClassName}(${className} *model.${ClassName}) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(${className} model.${ClassName}) (res any, err error) {
 
-    return ${className}.Insert${ClassName}(core.GLOBAL_DB)
+    return ${goReceiverName}s.${className}Repository.Insert${ClassName}(${className})
 }
 
 // Update${ClassName} 修改${functionName}
-func (this *${ClassName}Service) Update${ClassName}(${className} *model.${ClassName}) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(${className} model.${ClassName}) (res any, err error) {
 
-    return ${className}.Update${ClassName}By${pkColumn.capJavaField}(core.GLOBAL_DB)
+    return ${goReceiverName}s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(${className})
 }
 
 // Delete${ClassName} 删除${functionName}
-func (this *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (res any, err error) {
 
-    return (&model.${ClassName}{}).Delete${ClassName}(core.GLOBAL_DB, ${pkColumn.javaField}List)
+    return ${goReceiverName}s.${className}Repository.BatchDelete${ClassName}(${pkColumn.javaField}List)
 }
 
 // Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}业务详细信息
-func (this *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (res any, err error) {
 
     ${className} := model.${ClassName}{}
-    err = (&${className}).Find${ClassName}By${pkColumn.capJavaField}(core.GLOBAL_DB, ${pkColumn.javaField})
+    err = ${goReceiverName}s.${className}Repository.Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField})
     if err != nil {
         return nil, err
     }
@@ -36,10 +46,10 @@ func (this *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkC
 }
 
 // Get${ClassName}List 查询${functionName}业务列表
-func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Get${ClassName}List(${className}Req req.${ClassName}Req) (res any, err error) {
 
-    ${className}, err := ${className}Dto.DtoToModel()
-    ${className}List, err := ${className}.Find${ClassName}List(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime)
+    ${className}, err := ${className}Req.ReqToModel()
+    ${className}List, err := ${goReceiverName}s.${className}Repository.Find${ClassName}List(*${className}, ${className}Req.SatrtTime, ${className}Req.EndTime)
     if err != nil {
         return nil, err
     }
@@ -48,22 +58,22 @@ func (this *${ClassName}Service) Get${ClassName}List(${className}Dto *dto.${Clas
 }
 
 // Get${ClassName}PageList 分页查询${functionName}业务列表
-func (this *${ClassName}Service) Get${ClassName}PageList(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Get${ClassName}PageList(${className}Req req.${ClassName}Req) (res any, err error) {
 
-    ${className}, err := ${className}Dto.DtoToModel()
-    ${className}List, total, err := ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, ${className}Dto.PageNum, ${className}Dto.PageSize)
+    ${className}, err := ${className}Req.ReqToModel()
+    ${className}List, total, err := ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(*${className}, ${className}Req.SatrtTime, ${className}Req.EndTime, ${className}Req.PageNum, ${className}Req.PageSize)
     if err != nil {
         return nil, err
     }
 
-    return commonUtils.BuildPageData[model.${ClassName}](${className}List, total, ${className}Dto.PageNum, ${className}Dto.PageSize), nil
+    return commonUtils.BuildPageData[model.${ClassName}](${className}List, total, ${className}Req.PageNum, ${className}Req.PageSize), nil
 }
 
 // Export${ClassName} 导出${functionName}业务列表
-func (this *${ClassName}Service) Export${ClassName}(${className}Dto *dto.${ClassName}Dto) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Export${ClassName}(${className}Req req.${ClassName}Req) (res any, err error) {
 
-    ${className}, err := ${className}Dto.DtoToModel()
-    ${className}.Find${ClassName}PageList(core.GLOBAL_DB, ${className}Dto.SatrtTime, ${className}Dto.EndTime, 1, 10000)
+    ${className}, err := ${className}Req.ReqToModel()
+    ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(*${className}, ${className}Req.SatrtTime, ${className}Req.EndTime, 1, 10000)
     // 实现导出 ...
 
     return nil, nil

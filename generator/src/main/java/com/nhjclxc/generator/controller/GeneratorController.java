@@ -35,6 +35,19 @@ public class GeneratorController {
     @Autowired
     private GeneratorService generatorService;
 
+    /*
+    连接到数据库： http://127.0.0.1:8099/gen/connect?username=root&password=root123&jdbcUrl=jdbc:mysql://127.0.0.1:3306/test1
+
+    代码生成：
+        连接到数据库接口的响应头里面会返回一个Authorization，要在这个接口加上
+        http://127.0.0.1:8099/gen/genCode?enableLombok=true&enableSwagger=true&packageName=com.example&tables=xxx
+
+    代码预览：
+        连接到数据库接口的响应头里面会返回一个Authorization，要在这个接口加上
+        http://127.0.0.1:8099/gen/preview?enableLombok=true&enableSwagger=true&packageName=com.example&tables=xxx
+
+     */
+
     /**
      * 连接到数据库
      */

@@ -1,4 +1,4 @@
-package dto
+package req
 
 import (
     "fmt"
@@ -6,10 +6,10 @@ import (
     "time"
 )
 
-// ${functionName}对象 ${ClassName}Dto
+// ${ClassName}Req ${functionName}对象请求结构体
 // @author ${author}
 // @date ${datetime}
-type ${ClassName}Dto struct {
+type ${ClassName}Req struct {
 
     model.${ClassName}
 
@@ -24,23 +24,23 @@ type ${ClassName}Dto struct {
 
 
 
-// DtoToModel modelDto 转化为 model
-func (this *${ClassName}Dto) DtoToModel() (${className} *model.${ClassName}, err error){
+// ReqToModel modelReq 转化为 model
+func (${goReceiverName} *${ClassName}Req) ReqToModel() (${className} *model.${ClassName}, err error){
     // go get github.com/jinzhu/copier
 
     ${className} = &model.${ClassName}{} // copier.Copy 不会自动为其分配空间，所以初始化指针指向的结构体
-    err = copier.Copy(&${className}, &this)
+    err = copier.Copy(&${className}, &${goReceiverName})
     return
 }
 
 
-// ModelToDto model 转化为 modelDto
-func (this *${ClassName}Dto) ModelToDto(${className} *model.${ClassName}) error {
+// ModelToReq model 转化为 modelReq
+func (${goReceiverName} *${ClassName}Req) ModelToReq(${className} *model.${ClassName}) error {
     // go get github.com/jinzhu/copier
 
-    err := copier.Copy(&this, &${className})
+    err := copier.Copy(&${goReceiverName}, &${className})
     if err != nil {
-    fmt.Printf("DtoTo Copy error: %v", err)
+    fmt.Printf("ReqTo Copy error: %v", err)
         return err
     }
     return nil
