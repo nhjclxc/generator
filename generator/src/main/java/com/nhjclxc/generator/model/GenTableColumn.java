@@ -62,6 +62,9 @@ public class GenTableColumn  implements Serializable {
     @NotBlank(message = "Golang属性不能为空")
     private String goField;
 
+    /** Golang的gorm的标签类型 */
+    private String goGormTarget;
+
     /** 是否主键（1是） */
     private String isPk;
 

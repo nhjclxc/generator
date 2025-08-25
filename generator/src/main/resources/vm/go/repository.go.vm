@@ -24,20 +24,20 @@ func New${ClassName}Repository(db *gorm.DB) *${ClassName}Repository {
 // 由于有时需要开启事务，因此 DB *gorm.DB 可以选择从外部传入
 
 // Insert${ClassName} 新增${functionName}
-func (${goReceiverName}r *${ClassName}Repository) Insert${ClassName}(${className} model.${ClassName}) (int, error) {
+func (${goReceiverName}r *${ClassName}Repository) Insert${ClassName}(${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Insert${ClassName}：", slog.Any("${className}", ${className}))
 
     // 先查询是否有相同 name 的数据存在
     temp := &model.${ClassName}{}
-    // todo update name
-    tx := ${goReceiverName}r.db.Where("name = ?", ${className}.?).First(temp)
+    // todo update name    
+    tx := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Where("name = ?", ${className}.?).First(temp)
     slog.Info("Insert${ClassName}.Where Unique：", slog.Any("temp", temp))
     if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
         return 0, errors.New("${ClassName}Repository.Insert${ClassName}.Where, 存在相同 name: " + temp.?)
     }
 
     // 执行 Insert
-    err := ${goReceiverName}r.db.Create(&${className}).Error
+    err := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Create(&${className}).Error
 
     if err != nil {
         return 0, errors.New("${ClassName}Repository.Insert${ClassName}.${goReceiverName}r.db.Create, 新增失败: " + err.Error())
@@ -46,10 +46,10 @@ func (${goReceiverName}r *${ClassName}Repository) Insert${ClassName}(${className
 }
 
 // BatchInsert${ClassName}s 批量新增${functionName}
-func (${goReceiverName}r *${ClassName}Repository) BatchInsert${ClassName}s(${className}s []model.${ClassName}) (int, error) {
+func (${goReceiverName}r *${ClassName}Repository) BatchInsert${ClassName}s(${className}s []*model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.BatchInsert${ClassName}s：", slog.Any("${className}s", ${className}s))
 
-    result := ${goReceiverName}r.db.Create(&${className}s)
+    result := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Create(&${className}s)
     if result.Error != nil {
         return 0, errors.New("${ClassName}Repository.BatchInsert${ClassName}s.Create, 新增失败: " + result.Error.Error())
     }
@@ -57,7 +57,7 @@ func (${goReceiverName}r *${ClassName}Repository) BatchInsert${ClassName}s(${cla
 }
 
 // Update${ClassName}By${pkColumn.capJavaField} 根据主键修改${functionName}的所有字段
-func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}(${className} model.${ClassName}) (int, error) {
+func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}(${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}：", slog.Any("${className}", ${className}))
 
     // 1、查询该${pkColumn.capJavaField}是否存在
@@ -68,7 +68,7 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn
     // 2、再看看name是否重复
     temp := &model.${ClassName}{}
     // todo update name
-    tx := ${goReceiverName}r.db.Where("name = ?", ${className}.?).First(temp)
+    tx := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Where("name = ?", ${className}.?).First(temp)
     slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField} Unique：", slog.Any("temp", temp))
     if !errors.Is(tx.Error, gorm.ErrRecordNotFound) && temp.${pkColumn.capJavaField} != ${className}.${pkColumn.capJavaField} {
         return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Where, 存在相同 name: " + temp.?)
@@ -76,7 +76,7 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn
 
     // 3、执行修改
     //保存整个结构体（全字段更新）
-    saveErr := ${goReceiverName}r.db.Save(${className}).Error
+    saveErr := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Save(${className}).Error
     if saveErr != nil {
         return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: " + saveErr.Error())
     }
@@ -84,11 +84,11 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn
 }
 
 // Update${ClassName}Selective 修改${functionName}不为默认值的字段
-func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${className} model.${ClassName}) (int, error) {
+func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Update${ClassName}Selective：", slog.Any("${className}", ${className}))
 
-    // ${goReceiverName}r.db.Model().Updates()：只更新指定字段
-    err := ${goReceiverName}r.db.Model(model.${ClassName}{}).
+    // ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model().Updates()：只更新指定字段
+    err := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model(model.${ClassName}{}).
     Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).Updates(${className}).Error
     if err != nil {
         return 0, errors.New("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: " + err.Error())
@@ -99,7 +99,7 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${
 
 // BatchUpdate${ClassName}Selective 批量修改${functionName}
 func (${goReceiverName}r *${ClassName}Repository) BatchUpdate${ClassName}Selective(${className}s []model.${ClassName}) error {
-    return ${goReceiverName}r.db.Transaction(func(tx *gorm.DB) error {
+    return ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Transaction(func(tx *gorm.DB) error {
         for _, v := range ${className}s {
             err := tx.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} = ?", v.${pkColumn.capJavaField}).Updates(v).Error
             if err != nil {
@@ -114,7 +114,7 @@ func (${goReceiverName}r *${ClassName}Repository) BatchUpdate${ClassName}Selecti
 func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}ByState(${pkColumn.javaField}List []int64) error {
     slog.Info("${ClassName}Repository.BatchDelete${ClassName}ByState：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
 
-    return ${goReceiverName}r.db.Model(&model.${ClassName}{}).
+    return ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model(&model.${ClassName}{}).
         Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).
         Updates(map[string]any{
             "state":      0,
@@ -127,14 +127,14 @@ func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}(${pkCo
     slog.Info("${ClassName}Repository.BatchDelete${ClassName}：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
 
     // 当存在DeletedAt gorm.DeletedAt字段时为软删除，否则为物理删除
-    result := ${goReceiverName}r.db.Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&model.${ClassName}{})
-    // result := ${goReceiverName}r.db.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Update("state", 0)
+    result := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&model.${ClassName}{})
+    // result := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Update("state", 0)
     if result.Error != nil {
         return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
     }
 
     //// 以下使用的是物理删除
-    //result := ${goReceiverName}r.db.Unscoped().Delete(&model.${ClassName}{}, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
+    //result := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Unscoped().Delete(&model.${ClassName}{}, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
     //if result.Error != nil {
     //	return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
     //}
@@ -143,29 +143,29 @@ func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}(${pkCo
 }
 
 // Find${ClassName}By${pkColumn.capJavaField} 获取${functionName}详细信息
-func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (model.${ClassName}, error) {
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (*model.${ClassName}, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}By${pkColumn.capJavaField}：", slog.Any("${pkColumn.javaField}", ${pkColumn.javaField}))
 
     ${className} := model.${ClassName}{}
-    err := ${goReceiverName}r.db.First(&${className}, "${pkColumn.columnName} = ?", ${pkColumn.javaField}).Error
-    return ${className}, err
+    err := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).First(&${className}, "${pkColumn.columnName} = ?", ${pkColumn.javaField}).Error
+    return &${className}, err
 }
 
 // Find${ClassName}sBy${pkColumn.capJavaField}List 根据主键批量查询${functionName}详细信息
-func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}sBy${pkColumn.capJavaField}List(${pkColumn.javaField}List []int64) ([]model.${ClassName}, error) {
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}sBy${pkColumn.capJavaField}List(${pkColumn.javaField}List []int64) ([]*model.${ClassName}, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}sBy${pkColumn.capJavaField}List：", slog.Any("${pkColumn.javaField}List", ${pkColumn.javaField}List))
 
-    var result []model.${ClassName}
-    err := ${goReceiverName}r.db.Where("${pkColumn.javaField} IN ?", ${pkColumn.javaField}List).Find(&result).Error
+    var result []*model.${ClassName}
+    err := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Where("${pkColumn.javaField} IN ?", ${pkColumn.javaField}List).Find(&result).Error
     return result, err
 }
 
 // Find${ClassName}List 查询${functionName}列表
-func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${className} model.${ClassName}, satrtTime time.Time, endTime time.Time) ([]model.${ClassName}, error) {
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${className} model.${ClassName}, startTime time.Time, endTime time.Time) ([]*model.${ClassName}, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}List：", slog.Any("${className}", ${className}))
 
     var ${className}s []model.${ClassName}
-    query := ${goReceiverName}r.db.Model(&model.${ClassName}{})
+    query := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model(&model.${ClassName}{})
 
         // 构造查询条件
 #foreach($column in $columns)
@@ -203,8 +203,8 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${classNa
     #end
 #end
 
-    if !satrtTime.IsZero() {
-        query = query.Where("create_time >= ?", satrtTime)
+    if !startTime.IsZero() {
+        query = query.Where("create_time >= ?", startTime)
     }
     if !endTime.IsZero() {
         query = query.Where("create_time <= ?", endTime)
@@ -216,20 +216,20 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${classNa
     //     query = query.Offset(offset).Limit(${className}.PageSize)
     // }
 
-    err := query.Find(&t${className}s).Error
+    err := query.Find(&${className}s).Error
     return ${className}s, err
 }
 
 // Find${ClassName}PageList 分页查询${functionName}列表
-func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${className} model.${ClassName}, satrtTime time.Time, endTime time.Time, pageNum int, pageSize int) ([]model.${ClassName}, int64, error) {
+func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${className} model.${ClassName}, startTime time.Time, endTime time.Time, pageNum int, pageSize int) ([]*model.${ClassName}, int64, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}PageList：", slog.Any("${className}", ${className}))
 
     var (
-        ${className}s []model.${ClassName}
+        ${className}s []*model.${ClassName}
         total     int64
     )
 
-    query := ${goReceiverName}r.db.Model(&model.${ClassName}{})
+    query := ${goReceiverName}r.db.Table((&model.${ClassName}{}).TableName()).Model(&model.${ClassName}{})
 
 // 构造查询条件
 #foreach($column in $columns)
@@ -267,8 +267,8 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${cla
     #end
 #end
 
-    if !satrtTime.IsZero() {
-        query = query.Where("create_time >= ?", satrtTime)
+    if !startTime.IsZero() {
+        query = query.Where("create_time >= ?", startTime)
     }
     if !endTime.IsZero() {
         query = query.Where("create_time <= ?", endTime)

@@ -6,6 +6,9 @@ import com.nhjclxc.generator.model.GenTable;
 import com.nhjclxc.generator.model.GenTableColumn;
 import org.apache.commons.lang3.RegExUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
@@ -50,7 +53,6 @@ public class GenUtils
         // 设置默认类型
         column.setIsQuery(GenConstants.REQUIRE);
         column.setJavaType(GenConstants.TYPE_STRING);
-        column.setGoType(GenConstants.GO_TYPE_STRING);
         column.setQueryType(GenConstants.QUERY_EQ);
 
         if (arraysContains(GenConstants.COLUMNTYPE_STR, dataType) || arraysContains(GenConstants.COLUMNTYPE_TEXT, dataType))
@@ -63,7 +65,6 @@ public class GenUtils
         else if (arraysContains(GenConstants.COLUMNTYPE_TIME, dataType))
         {
             column.setJavaType(GenConstants.TYPE_DATE);
-            column.setGoType(GenConstants.GO_TYPE_DATE);
             column.setHtmlType(GenConstants.HTML_DATETIME);
         }
         else if (arraysContains(GenConstants.COLUMNTYPE_NUMBER, dataType))
@@ -75,15 +76,12 @@ public class GenUtils
             if ((str != null && str.length == 2 && Integer.parseInt(str[1]) > 0 ) || dataType.toLowerCase().contains("decimal"))
             {
                 column.setJavaType(GenConstants.TYPE_BIGDECIMAL);
-                column.setGoType(GenConstants.GO_TYPE_BIGDECIMAL);
             }else if (dataType.toLowerCase().contains("bigint")){
                 // 长整形
                 column.setJavaType(GenConstants.TYPE_LONG);
-                column.setGoType(GenConstants.GO_TYPE_LONG);
             }else {
                 // 整形
                 column.setJavaType(GenConstants.TYPE_INTEGER);
-                column.setGoType(GenConstants.GO_TYPE_INTEGER);
             }
         }
 
@@ -147,6 +145,108 @@ public class GenUtils
         {
             column.setHtmlType(GenConstants.HTML_EDITOR);
         }
+    }
+
+    public static String mapToGoType(String dataType, String columnType, String isNullable) {
+        boolean isUnsigned = null != columnType && columnType.contains("unsigned");
+        String goType;
+        switch (dataType) {
+            case "tinyint":
+                goType = isUnsigned ? "uint8" : "int8";
+                break;
+            case "smallint":
+                goType = isUnsigned ? "uint16" : "int16";
+                break;
+            case "mediumint":
+            case "int":
+            case "integer":
+                goType = isUnsigned ? "uint32" : "int32";
+                break;
+            case "bigint":
+                goType = isUnsigned ? "uint64" : "int64";
+                break;
+            case "varchar":
+            case "text":
+            case "longtext":
+            case "char":
+                goType = "string";
+                break;
+            case "datetime":
+            case "timestamp":
+                goType = "time.Time";
+                break;
+            case "double":
+            case "decimal":
+            case "float":
+                goType = "float64";
+                break;
+            default:
+                goType = "string";
+        }
+        if ("YES".equals(isNullable) && !goType.equals("string")) {
+            goType = "*" + goType; // 可空用指针
+        }
+        return goType;
+    }
+
+    public static String execGoGormtarget(ResultSet rs) throws SQLException {
+        String columnName = rs.getString("column_name");
+        String dataType = rs.getString("data_type");
+        Long charLength = rs.getLong("character_maximum_length");
+        String columnKey = rs.getString("column_key");
+        String columnType =  rs.getString("column_type");
+        String extra = rs.getString("extra");
+        String comment = rs.getString("column_comment");
+        String indexNames = rs.getString("index_names");
+        String isNullable = rs.getString("is_nullable");
+        String columnDefault = rs.getString("column_default");
+
+
+        boolean priFlag = false, uniFlag = false;
+        // 构建 GORM 标签
+        List<String> tags = new ArrayList<>();
+        tags.add("column:" + columnName);
+        tags.add("type:" + columnType);
+        if (columnKey.equals("PRI")) {
+            tags.add("primaryKey");
+            priFlag = true;
+        }
+        if (columnKey.equals("UNI")) {
+            tags.add("unique");
+            uniFlag = true;
+        }
+        if (extra != null && extra.contains("auto_increment"))
+            tags.add("autoIncrement");
+
+        if ("1".equals(rs.getString("is_nullable")))
+            tags.add("not null");
+
+        if (null != columnDefault) {
+
+            tags.add("default:" + columnDefault);
+            if ("CURRENT_TIMESTAMP".equals(columnDefault))
+                tags.add("autoUpdateTime");
+        }
+
+        if (indexNames != null && !indexNames.isEmpty()) {
+            String[] idxs = indexNames.split(",");
+            for (String s : idxs) {
+                String[] idx = s.split(":");
+                if ( (priFlag && "PRIMARY".equals(idx[0])) || (uniFlag && columnName.equals(idx[0]))) {
+                    continue;
+                }
+                tags.add("index:" + idx[0] + ",priority:" + idx[1]);
+            }
+        }
+        if (comment != null && !comment.isEmpty()) {
+            tags.add("comment:" + comment);
+        }
+
+        String goGormTarget = String.join(";", tags);
+
+        // 输出 Go 字段
+//        System.out.printf("%s `gorm:\"%s\"` \n\n", columnName, goGormTarget);
+        return goGormTarget;
     }
 
     /**

@@ -149,13 +149,34 @@ public class GeneratorService {
 	 * 获取列数据
 	 */
 	private static String getDBTableColumnsByName(String tableNames){
-		return "select table_name, column_name, ordinal_position as sort, column_comment, column_type, column_default," +
-				"(case when (is_nullable = 'no' && column_key != 'PRI') then '1' else '0' end) as is_required, " +
-				"(case when column_key = 'PRI' then '1' else '0' end) as is_pk, " +
-				"(case when extra = 'auto_increment' then '1' else '0' end) as is_increment, " +
-				"(case when IS_NULLABLE = 'NO' then '1' else '0' end) as is_nullable\n" +
-		"\t\tfrom information_schema.columns where table_schema = (select database()) and table_name in ( " + tableNames + " ) \n" +
-		"\t\torder by ordinal_position";
+		return "select c.table_name, c.column_name, c.ordinal_position as sort, c.column_comment, c.data_type, c.column_type, c.column_default,\n" +
+				"    c.extra, c.character_maximum_length, c.column_key, s.index_names,\n" +
+				"    (case when (c.is_nullable = 'no' && c.column_key != 'PRI') then '1' else '0' end) as is_required,\n" +
+				"    (case when c.column_key = 'PRI' then '1' else '0' end) as is_pk,\n" +
+				"    (case when c.extra = 'auto_increment' then '1' else '0' end) as is_increment,\n" +
+				"    (case when c.IS_NULLABLE = 'NO' then '1' else '0' end) as is_nullable\n" +
+				"from information_schema.columns c\n" +
+				"    LEFT JOIN (\n" +
+				"        select\n" +
+				"            ss.table_schema, ss.table_name, ss.column_name,\n" +
+				"            group_concat(concat_ws(':',ss.INDEX_NAME, ss.SEQ_IN_INDEX) separator',') AS index_names\n" +
+				"        from information_schema.STATISTICS ss\n" +
+				"        where ss.table_name in ( " + tableNames + " )\n" +
+				"        group by ss.table_schema, ss.table_name, ss.column_name\n" +
+				"    ) as s ON c.table_schema = s.table_schema AND c.table_name = s.table_name AND c.column_name = s.column_name\n" +
+				"where c.table_schema = (select database()) and c.table_name in ( " + tableNames + " )\n" +
+				"order by c.table_name, c.ordinal_position;";
+
+//		return "select table_name, column_name, ordinal_position as sort, column_comment, data_type, column_type, column_default," +
+//				"(case when (is_nullable = 'no' && column_key != 'PRI') then '1' else '0' end) as is_required, " +
+//				"(case when column_key = 'PRI' then '1' else '0' end) as is_pk, " +
+//				"(case when extra = 'auto_increment' then '1' else '0' end) as is_increment, " +
+//				"(case when IS_NULLABLE = 'NO' then '1' else '0' end) as is_nullable\n" +
+//		"\t\tfrom information_schema.columns where table_schema = (select database()) and table_name in ( " + tableNames + " ) \n" +
+//		"\t\torder by ordinal_position";
+		/*
+		c.column_key取值：PRI：主键（Primary Key）；UNI：唯一索引（Unique Key）；MUL：普通索引（Multiple）即联合索引；空字符串 ''：无索引；
+		 */
 	}
 
 	/**
@@ -280,6 +301,10 @@ public class GeneratorService {
 					.isRequired(columnsRes.getString("is_required")).isPk(columnsRes.getString("is_pk"))
 					.isIncrement(columnsRes.getString("is_increment")).isNullable(columnsRes.getString("is_nullable"))
 					.build();
+
+			column.setGoType(GenUtils.mapToGoType(columnsRes.getString("data_type"), columnsRes.getString("column_type"), columnsRes.getString("is_nullable")));
+			column.setGoGormTarget(GenUtils.execGoGormtarget(columnsRes));
+
 			GenUtils.initColumnField(column);
 			genTableColumnsList.add(column);
 		}
