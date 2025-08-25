@@ -50,10 +50,14 @@ func (${goReceiverName} *${ClassName}) TableName() string {
 func (${goReceiverName} *${ClassName}) CreateTable(tx *gorm.DB) error {
     tableName := ${goReceiverName}.TableName()
     if !tx.Migrator().HasTable(tableName) {
+        // 创建表
         err := tx.Table(tableName).Migrator().CreateTable(&${ClassName}{})
         if err != nil {
             return err
         }
+        // 再手动加上表注释和 charset
+        sql := fmt.Sprintf("ALTER TABLE %s COMMENT='${functionName}' DEFAULT CHARSET=utf8mb4;", tableName)
+        tx.Exec(sql)
     }
     return nil
 }

@@ -148,45 +148,91 @@ public class GenUtils
     }
 
     public static String mapToGoType(String dataType, String columnType, String isNullable) {
-        boolean isUnsigned = null != columnType && columnType.contains("unsigned");
-        String goType;
-        switch (dataType) {
-            case "tinyint":
-                goType = isUnsigned ? "uint8" : "int8";
-                break;
-            case "smallint":
-                goType = isUnsigned ? "uint16" : "int16";
-                break;
-            case "mediumint":
-            case "int":
-            case "integer":
-                goType = isUnsigned ? "uint32" : "int32";
-                break;
-            case "bigint":
-                goType = isUnsigned ? "uint64" : "int64";
-                break;
-            case "varchar":
-            case "text":
-            case "longtext":
-            case "char":
-                goType = "string";
-                break;
-            case "datetime":
-            case "timestamp":
-                goType = "time.Time";
-                break;
-            case "double":
-            case "decimal":
-            case "float":
-                goType = "float64";
-                break;
-            default:
-                goType = "string";
-        }
+        String goType = mapToGoType(dataType, columnType);
         if ("YES".equals(isNullable) && !goType.equals("string")) {
             goType = "*" + goType; // 可空用指针
         }
         return goType;
+    }
+
+    public static String mapToGoType(String dataType, String columnType) {
+        if (dataType == null) return "interface{}";
+        dataType = dataType.toLowerCase();
+        columnType = columnType != null ? columnType.toLowerCase() : "";
+
+        boolean isUnsigned = columnType.contains("unsigned");
+
+        switch (dataType) {
+            // ---------------- 数值类型 ----------------
+            case "tinyint":
+                if (columnType.equals("tinyint(1)")) {
+                    return "bool"; // tinyint(1) 特殊映射为 bool
+                }
+                return isUnsigned ? "uint8" : "int8";
+
+            case "smallint":
+                return isUnsigned ? "uint16" : "int16";
+
+            case "mediumint":
+                return isUnsigned ? "uint32" : "int32";
+
+            case "int":
+            case "integer":
+                return isUnsigned ? "uint32" : "int32";
+
+            case "bigint":
+                return isUnsigned ? "uint64" : "int64";
+
+            case "decimal":
+            case "numeric":
+                return "float64"; // 或者使用 github.com/shopspring/decimal
+
+            case "float":
+                return "float32";
+
+            case "double":
+            case "real":
+                return "float64";
+
+            case "bit":
+                return "[]byte"; // MySQL BIT 一般用 byte array
+
+            // ---------------- 字符串类型 ----------------
+            case "char":
+            case "varchar":
+            case "tinytext":
+            case "text":
+            case "mediumtext":
+            case "longtext":
+            case "enum":
+            case "set":
+                return "string";
+
+            // ---------------- JSON 类型 ----------------
+            case "json":
+                return "datatypes.JSON"; // GORM 的 datatypes.JSON
+
+            // ---------------- 时间类型 ----------------
+            case "date":
+            case "datetime":
+            case "timestamp":
+            case "time":
+            case "year":
+                return "time.Time";
+
+            // ---------------- 二进制类型 ----------------
+            case "binary":
+            case "varbinary":
+            case "tinyblob":
+            case "blob":
+            case "mediumblob":
+            case "longblob":
+                return "[]byte";
+
+            // ---------------- 兜底 ----------------
+            default:
+                return "interface{}"; // 未知类型，默认 interface{}
+        }
     }
 
     public static String execGoGormtarget(ResultSet rs) throws SQLException {
