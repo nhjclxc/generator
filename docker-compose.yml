@@ -1,0 +1,62 @@
+#表示 Compose 文件的版本号, 目前推荐使用 '3.9'（适用于 Docker 20.x+）
+version: '3.9'
+
+# 定义服务入口，所有你要运行的容器都定义在 services: 下
+#每一个 service 相当于一个容器定义（如 java、gin、vue）
+services:
+  # 定义后端 后端服务
+  # docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/openjdk:11-jdk-slim
+  # docker tag  swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/openjdk:11-jdk-slim  docker.io/openjdk:11-jdk-slim
+  generator:
+    build:
+      context: ./generator
+      dockerfile: Dockerfile
+    container_name: generator
+    ports:
+      - "8099:8099"
+    volumes:
+      - ./generator/logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # 定义前端 前端服务
+  # docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/nginx:stable-alpine
+  # docker tag  swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/nginx:stable-alpine  docker.io/nginx:stable-alpine
+  generator-ui:
+    image: nginx:stable-alpine
+    container_name: generator-ui
+    ports:
+      - "9099:9099"
+    volumes:
+      - ./generator-ui/html:/usr/share/nginx/html
+      - ./generator-ui/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - generator
+    restart: unless-stopped
+    networks:
+      - app-network
+
+
+  # 定义数据库，可选
+  # docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/mysql:8.0
+  # docker tag  swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/mysql:8.0  docker.io/mysql:8.0
+  mysql80:
+    image: mysql:8.0
+    container_name: mysql80
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: root123
+    ports:
+      - "3306:3306"
+    volumes:
+      - /home/mysql/data:/var/lib/mysql
+      - /home/mysql/conf:/etc/mysql/conf.d
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

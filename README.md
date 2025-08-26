@@ -1,5 +1,5 @@
 # generator
-​	根据后端表结构，生成后端SpringBoot和前端Vue组件相关代码
+​	根据后端表结构，生成Java后端SpringBoot/go后端和前端Vue组件相关代码
 
 ***
 
@@ -53,6 +53,33 @@ git clone https://github.com/nhjclxc/generator.git
 前端项目启动在9098端口
 
 
+### docker启动一个mysql
+// 镜像网站：https://docker.aityp.com/image/docker.io/mysql:8.0
+
+docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/mysql:8.0
+docker tag  swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/mysql:8.0  docker.io/mysql:8.0
+
+mkdir -p /home/mysql/data /home/mysql/conf  /home/mysql/logs
+
+sudo chown -R 999:999 /home/mysql/data /home/mysql/conf  /home/mysql/logs
+
+```shell
+docker run -d \
+--name mysql80 \
+-e MYSQL_ROOT_PASSWORD=root123 \
+-p 3306:3306 \
+-v /home/mysql/data:/var/lib/mysql \
+-v /home/mysql/conf:/etc/mysql/conf.d \
+-v /home/mysql/logs:/var/log/mysql \
+--restart always \
+mysql:8.0
+```
+
+docker logs -f mysql80
+
+docker exec -it mysql80 bash
+
+mysql -u root -p
 
 ## 使用案例
 
