@@ -16,28 +16,27 @@ func New${ClassName}Service(db *gorm.DB, ${className}Repository *repository.${Cl
 }
 
 // Insert${ClassName} 新增${functionName}
-func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(${className} model.${ClassName}) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(${className} model.${ClassName}) (int, error) {
 
-    return ${goReceiverName}s.${className}Repository.Insert${ClassName}(${className})
+    return ${goReceiverName}s.${className}Repository.Insert${ClassName}(&${className})
 }
 
 // Update${ClassName} 修改${functionName}
-func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(${className} model.${ClassName}) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(${className} model.${ClassName}) (int, error) {
 
-    return ${goReceiverName}s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(${className})
+    return ${goReceiverName}s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(&${className})
 }
 
 // Delete${ClassName} 删除${functionName}
-func (${goReceiverName}s *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Delete${ClassName}(${pkColumn.javaField}List []int64) (int, error) {
 
     return ${goReceiverName}s.${className}Repository.BatchDelete${ClassName}(${pkColumn.javaField}List)
 }
 
 // Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}业务详细信息
-func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField} int64) (*model.${ClassName}, error) {
 
-    ${className} := model.${ClassName}{}
-    err = ${goReceiverName}s.${className}Repository.Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField})
+    ${className}, err := ${goReceiverName}s.${className}Repository.Find${ClassName}By${pkColumn.capJavaField}(${pkColumn.javaField})
     if err != nil {
         return nil, err
     }

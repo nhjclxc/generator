@@ -90,8 +90,8 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn
 func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Update${ClassName}Selective：", slog.Any("${className}", ${className}))
 
-    // ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Model().Updates()：只更新指定字段
-    err := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Model(model.${ClassName}{}).
+    // ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Updates()：只更新指定字段
+    err := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).
     Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).Updates(${className}).Error
     if err != nil {
         return 0, errors.New("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: " + err.Error())
@@ -167,57 +167,56 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}sBy${pkColumn.
 func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}List(${className} model.${ClassName}, startTime time.Time, endTime time.Time) ([]*model.${ClassName}, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}List：", slog.Any("${className}", ${className}))
 
-    var ${className}s []model.${ClassName}
+    var ${className}s []*model.${ClassName}
     query := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{})
 
-        // 构造查询条件
+    // 构造查询条件
 #foreach($column in $columns)
-    #set($queryType=$column.queryType)
-    #set($javaField=$column.javaField)
-    #set($javaType=$column.javaType)
-    #set($columnName=$column.columnName)
-    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
-    #if($column.query)
+#set($queryType=$column.queryType)
+#set($columnName=$column.columnName)
+#if($column.query)
+    #set($tags = "=")
+    #if($column.queryType == "EQ")
         #set($tags = "=")
-        #if($column.queryType == "EQ")
-            #set($tags = "=")
-        #elseif($queryType == "NE")
-            #set($tags = "!=")
-        #elseif($queryType == "GT")
-            #set($tags = ">")
-        #elseif($queryType == "GTE")
-            #set($tags = ">=")
-        #elseif($queryType == "LT")
-            #set($tags = "<")
-        #elseif($queryType == "LTE")
-            #set($tags = "<=")
-        #elseif($queryType == "LIKE")
-            #set($tags = "LIKE")
-        #elseif($queryType == "BETWEEN")
-        #end
-        #if($column.goType == 'time.Time')
-        if !${className}.${column.goField}.IsZero() {
-            query = query.Where("$columnName $tags ?", ${className}.$column.goField)
-            // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
-        }
-        #else
-        if ${className}.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
-        #end
+    #elseif($queryType == "NE")
+        #set($tags = "!=")
+    #elseif($queryType == "GT")
+        #set($tags = ">")
+    #elseif($queryType == "GTE")
+        #set($tags = ">=")
+    #elseif($queryType == "LT")
+        #set($tags = "<")
+    #elseif($queryType == "LTE")
+        #set($tags = "<=")
+    #elseif($queryType == "LIKE")
+        #set($tags = "LIKE")
+    #elseif($queryType == "BETWEEN")
     #end
+    #set($defaultValue = '""')
+    #if($column.goType == "string")
+        #set($defaultValue = '""')
+    #elseif($column.goType.contains("int"))
+        #set($defaultValue = 0)
+    #elseif($column.goType.contains("float"))
+        #set($defaultValue = 0.0)
+    #end
+    #if($column.goType == 'time.Time')
+    if !${className}.${column.goField}.IsZero() {
+        query = query.Where("$columnName $tags ?", ${className}.$column.goField)
+        // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
+    }
+    #else
+    if ${className}.$column.goField != $defaultValue { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
+    #end
+#end
 #end
 
     if !startTime.IsZero() {
-        query = query.Where("create_time >= ?", startTime)
+        query = query.Where("created_at >= ?", startTime)
     }
     if !endTime.IsZero() {
-        query = query.Where("create_time <= ?", endTime)
+        query = query.Where("created_at <= ?", endTime)
     }
-
-    // // 添加分页逻辑
-    // if ${className}.PageNum > 0 && ${className}.PageSize > 0 {
-    //     offset := (${className}.PageNum - 1) * ${className}.PageSize
-    //     query = query.Offset(offset).Limit(${className}.PageSize)
-    // }
 
     err := query.Find(&${className}s).Error
     return ${className}s, err
@@ -234,47 +233,52 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${cla
 
     query := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{})
 
-// 构造查询条件
+    // 构造查询条件
 #foreach($column in $columns)
-    #set($queryType=$column.queryType)
-    #set($javaField=$column.javaField)
-    #set($javaType=$column.javaType)
-    #set($columnName=$column.columnName)
-    #set($AttrName=$column.javaField.substring(0,1).toUpperCase() + ${column.javaField.substring(1)})
-    #if($column.query)
+#set($queryType=$column.queryType)
+#set($columnName=$column.columnName)
+#if($column.query)
+    #set($tags = "=")
+    #if($column.queryType == "EQ")
         #set($tags = "=")
-        #if($column.queryType == "EQ")
-            #set($tags = "=")
-        #elseif($queryType == "NE")
-            #set($tags = "!=")
-        #elseif($queryType == "GT")
-            #set($tags = ">")
-        #elseif($queryType == "GTE")
-            #set($tags = ">=")
-        #elseif($queryType == "LT")
-            #set($tags = "<")
-        #elseif($queryType == "LTE")
-            #set($tags = "<=")
-        #elseif($queryType == "LIKE")
-            #set($tags = "LIKE")
-        #elseif($queryType == "BETWEEN")
-        #end
-        #if($column.goType == 'time.Time')
-        if !${className}.${column.goField}.IsZero() {
-            query = query.Where("$columnName $tags ?", ${className}.$column.goField)
-            // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
-        }
-        #else
-        if ${className}.$column.goField != #if($column.goType == 'string')""#elseif($column.goType.contains("int"))0#end { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
-        #end
+    #elseif($queryType == "NE")
+        #set($tags = "!=")
+    #elseif($queryType == "GT")
+        #set($tags = ">")
+    #elseif($queryType == "GTE")
+        #set($tags = ">=")
+    #elseif($queryType == "LT")
+        #set($tags = "<")
+    #elseif($queryType == "LTE")
+        #set($tags = "<=")
+    #elseif($queryType == "LIKE")
+        #set($tags = "LIKE")
+    #elseif($queryType == "BETWEEN")
     #end
+    #set($defaultValue = '""')
+    #if($column.goType == "string")
+        #set($defaultValue = '""')
+    #elseif($column.goType.contains("int"))
+        #set($defaultValue = 0)
+    #elseif($column.goType.contains("float"))
+        #set($defaultValue = 0.0)
+    #end
+    #if($column.goType == 'time.Time')
+    if !${className}.${column.goField}.IsZero() {
+        query = query.Where("$columnName $tags ?", ${className}.$column.goField)
+        // query = query.Where("DATE($columnName) $tags ?", ${className}.$column.goField.Format("2006-01-02"))
+    }
+    #else
+    if ${className}.$column.goField != $defaultValue { query = query.Where("$columnName $tags ?",#if($tags == "LIKE") "%" + ${className}.$column.goField + "%"#else ${className}.$column.goField #end) }
+    #end
+#end
 #end
 
     if !startTime.IsZero() {
-        query = query.Where("create_time >= ?", startTime)
+        query = query.Where("created_at >= ?", startTime)
     }
     if !endTime.IsZero() {
-        query = query.Where("create_time <= ?", endTime)
+        query = query.Where("created_at <= ?", endTime)
     }
 
     // 分页参数默认值
@@ -286,11 +290,11 @@ func (${goReceiverName}r *${ClassName}Repository) Find${ClassName}PageList(${cla
     }
 
     // 分页数据
-    // todo update create_time
+    // todo update created_at
     err := query.
-        Count(&total).Order("create_time desc").
+        Count(&total).
         Limit(pageSize).Offset((pageNum - 1) * pageSize).
-        Order("create_time desc").
+        Order("created_at desc").
         Find(&${className}s).Error
 
     if err != nil {

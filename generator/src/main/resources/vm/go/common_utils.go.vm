@@ -71,7 +71,8 @@ func ParseIds(idListStr string) ([]int64, error) {
 
 
 // BuildPageData 构造分页返回结构
-func BuildPageData[T any](dataList []T, total int64, pageNum, pageSize int) map[string]any {
+// func BuildPageData[T any](dataList []T, total int64, pageNum, pageSize int) map[string]any {
+func BuildPageData[T any](dataList []*T, total int64, pageNum, pageSize int) map[string]any {
     if pageSize <= 0 {
         pageSize = 10 // 默认每页 10 条，避免除零
     }
