@@ -8,9 +8,9 @@ import com.nhjclxc.generator.model.GeneratorCodeDTO;
 import com.nhjclxc.generator.model.JDBCObject;
 import com.nhjclxc.generator.service.GeneratorService;
 import com.nhjclxc.generator.config.JsonResult;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
+//import io.swagger.annotations.Api;
+//import io.swagger.annotations.ApiOperation;
+//import io.swagger.annotations.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/gen")
-@Api(tags = "tags⼀个登录的接⼝", description = "⽤户登录API")
+//@Api(tags = "tags⼀个登录的接⼝", description = "⽤户登录API")
 public class GeneratorController {
     @Autowired
     private GeneratorService generatorService;
@@ -51,8 +51,8 @@ public class GeneratorController {
     /**
      * 连接到数据库
      */
-    @ApiOperation(value = "连接到数据库")
-    @ApiResponse(code = 200, message = "success")
+//    @ApiOperation(value = "连接到数据库")
+//    @ApiResponse(code = 200, message = "success")
     @GetMapping("/connect")
     public JsonResult<PageInfo<GenTable>> connect(JDBCObject jdbcObject, HttpServletRequest request, HttpServletResponse response) throws SQLException {
         // 关闭上一个连接，防止一个浏览器客户端不断发起连接请求的情况，导致连接数不断增加
@@ -78,8 +78,8 @@ public class GeneratorController {
     /**
      * 关闭数据库连接
      */
-    @ApiOperation(value = "关闭数据库连接")
-    @ApiResponse(code = 200, message = "success")
+//    @ApiOperation(value = "关闭数据库连接")
+//    @ApiResponse(code = 200, message = "success")
     @GetMapping("/closeConnect")
     public JsonResult<String> closeConnect() {
         return JsonResult.success(generatorService.closeConnect());
@@ -89,8 +89,8 @@ public class GeneratorController {
     /**
      * 解析数据库表结构
      */
-    @ApiOperation(value = "解析数据库表结构")
-    @ApiResponse(code = 200, message = "success")
+//    @ApiOperation(value = "解析数据库表结构")
+//    @ApiResponse(code = 200, message = "success")
     @GetMapping("/parse")
     public JsonResult<PageInfo<GenTable>> parse(GeneratorCodeDTO dto, Integer pageNum, Integer pageSize) throws SQLException {
         return JsonResult.success(generatorService.parse(dto, pageNum, pageSize));
