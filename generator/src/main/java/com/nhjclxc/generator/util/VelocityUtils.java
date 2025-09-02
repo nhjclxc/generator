@@ -216,15 +216,15 @@ public class VelocityUtils
         }
         else if (template.contains("model.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/model/{}", goPath, StringUtils.toUnderScoreCase(className + "_model.go"));
+            fileName = StringUtils.format("{}/entity/model/{}", goPath, StringUtils.toUnderScoreCase(className + ".go"));
         }
         else if (template.contains("model_req.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/req/{}", goPath, StringUtils.toUnderScoreCase(className + "_model_req.go"));
+            fileName = StringUtils.format("{}/entity/req/{}", goPath, StringUtils.toUnderScoreCase(className + "_req.go"));
         }
         else if (template.contains("model_resp.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/resp/{}", goPath, StringUtils.toUnderScoreCase(className + "_model_resp.go"));
+            fileName = StringUtils.format("{}/entity/resp/{}", goPath, StringUtils.toUnderScoreCase(className + "_resp.go"));
         }
         else if (template.contains("repository.go.vm"))
         {
