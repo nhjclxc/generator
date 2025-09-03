@@ -1,8 +1,13 @@
 package service
 
+import (
+    "context"
+    "log/slog"
+)
 
 // ${ClassName}Service ${functionName} Service 层
 type ${ClassName}Service struct {
+    ctx context.Context
     db                           *gorm.DB
     ${className}Repository *repository.${ClassName}Repository
 }
@@ -15,14 +20,40 @@ func New${ClassName}Service(db *gorm.DB, ${className}Repository *repository.${Cl
     }
 }
 
+// New${ClassName}Service2 创建 ${ClassName} ${functionName} 业务层对象
+func New${ClassName}Service2(ctx context.Context, db *gorm.DB) *${ClassName}Service {
+    return &${ClassName}Service{
+        ctx: ctx,
+        db: db,
+    }
+}
+
 // Insert${ClassName} 新增${functionName}
 func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(${className} model.${ClassName}) (int, error) {
+    dbData, err := ${goReceiverName}s.${className}Repository.Select${ClassName}Unique(${className})
+    if dbData != nil {
+        return 0, fmt.Errorf("xxx已被占用")
+    }
+    if err != nil {
+        return 0, err
+    }
 
     return ${goReceiverName}s.${className}Repository.Insert${ClassName}(&${className})
 }
 
 // Update${ClassName} 修改${functionName}
 func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(${className} model.${ClassName}) (int, error) {
+    if ${className}.${pkColumn.capJavaField} == 0 {
+        return 0, fmt.Errorf("${ClassName}Service.Update${ClassName} ${pkColumn.capJavaField} 不能为空！！！: ")
+    }
+
+    dbData, err := ${goReceiverName}s.${className}Repository.Select${ClassName}Unique(${className})
+    if dbData != nil && dbData.${pkColumn.capJavaField} != dbData.${pkColumn.capJavaField} {
+        return 0, fmt.Errorf("xxx已被占用")
+    }
+    if err != nil {
+        return 0, err
+    }
 
     return ${goReceiverName}s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(&${className})
 }

@@ -1,6 +1,7 @@
 package controller
 
 import (
+    "context"
     "github.com/gin-gonic/gin"
     "net/http"
 )
@@ -14,6 +15,13 @@ type ${ClassName}Controller struct{
 func New${ClassName}Controller(${className}Service *service.${ClassName}Service) *${ClassName}Controller {
     return &${ClassName}Controller{
         ${className}Service: ${className}Service,
+    }
+}
+
+// New${ClassName}Controller2 创建 ${ClassName} ${functionName} 控制器层对象
+func New${ClassName}Controller2(ctx context.Context, db *gorm.DB) *${ClassName}Controller {
+    return &${ClassName}Controller{
+        ${className}Service: service.${ClassName}Service.New${ClassName}Service2(ctx, db)
     }
 }
 
