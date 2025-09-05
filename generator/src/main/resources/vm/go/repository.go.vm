@@ -3,6 +3,7 @@ package repository
 import (
     "context"
     "errors"
+    "fmt"
     "gorm.io/gorm"
     "log/slog"
     "time"
@@ -34,7 +35,7 @@ func (${goReceiverName}r *${ClassName}Repository) Insert${ClassName}(${className
     err := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Create(&${className}).Error
 
     if err != nil {
-        return 0, errors.New("${ClassName}Repository.Insert${ClassName}Create, 新增失败: " + err.Error())
+        return 0, fmt.Errorf("${ClassName}Repository.Insert${ClassName}Create, 新增失败: %w ", err)
     }
     return 1, nil
 }
@@ -45,7 +46,7 @@ func (${goReceiverName}r *${ClassName}Repository) BatchInsert${ClassName}s(${cla
 
     result := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Create(&${className}s)
     if result.Error != nil {
-        return 0, errors.New("${ClassName}Repository.BatchInsert${ClassName}s.Create, 新增失败: " + result.Error.Error())
+        return 0, fmt.Errorf("${ClassName}Repository.BatchInsert${ClassName}s.Create, 新增失败: %w ", result.Error)
     }
     return int(result.RowsAffected), nil
 }
@@ -57,7 +58,7 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}By${pkColumn
     //保存整个结构体（全字段更新）
     saveErr := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Save(${className}).Error
     if saveErr != nil {
-        return 0, errors.New("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: " + saveErr.Error())
+        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: %w " + saveErr)
     }
     return 1, nil
 }
@@ -70,7 +71,7 @@ func (${goReceiverName}r *${ClassName}Repository) Update${ClassName}Selective(${
     err := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).
     Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).Updates(${className}).Error
     if err != nil {
-        return 0, errors.New("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: " + err.Error())
+        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: %w " + err)
     }
 
     return 1, nil
@@ -109,13 +110,13 @@ func (${goReceiverName}r *${ClassName}Repository) BatchDelete${ClassName}(${pkCo
     result := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&model.${ClassName}{})
     // result := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Update("state", 0)
     if result.Error != nil {
-        return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+        return 0, fmt.Errorf("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: %w " + result.Error)
     }
 
     //// 以下使用的是物理删除
-    //result := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Unscoped().Delete(&model.${ClassName}{}, "${pkColumn.columnName} in ?", ${pkColumn.javaField}List)
+    //result := ${goReceiverName}r.db.WithContext(${goReceiverName}r.ctx).Model(&model.${ClassName}{}).Unscoped().Delete(&model.${ClassName}{}, "${pkColumn.columnName} IN ?", ${pkColumn.javaField}List)
     //if result.Error != nil {
-    //	return 0, errors.New("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: " + result.Error.Error())
+    //	return 0, fmt.Errorf("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: %w " + result.Error)
     //}
 
     return int(result.RowsAffected), nil
