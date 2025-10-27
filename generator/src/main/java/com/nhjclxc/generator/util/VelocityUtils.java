@@ -149,6 +149,7 @@ public class VelocityUtils
         templates.add("vm/go/repository.go.vm");
         templates.add("vm/go/service.go.vm");
         templates.add("vm/go/controller.go.vm");
+        templates.add("vm/go/controller_common.go.vm");
         templates.add("vm/go/router.go.vm");
         templates.add("vm/go/common_utils.go.vm");
         templates.add("vm/go/joinExample/one2One.go.vm");
@@ -237,6 +238,10 @@ public class VelocityUtils
         else if (template.contains("controller.go.vm"))
         {
             fileName = StringUtils.format("{}/controller/{}", goPath, StringUtils.toUnderScoreCase(className + "_controller.go"));
+        }
+        else if (template.contains("controller_common.go.vm"))
+        {
+            fileName = StringUtils.format("{}/controller/{}", goPath, StringUtils.toUnderScoreCase("controller_common.go.vm"));
         }
         else if (template.contains("router.go.vm"))
         {

@@ -10,25 +10,12 @@ import (
 // @date ${datetime}
 type ${ClassName}Resp struct {
 
-    model.${ClassName}
+#foreach ($column in $columns)
+
+    $column.goField $column.goType `json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
+#end
 
     Foo string `form:"foo"` // foo
     Bar string `form:"bar"` // bar
     // ...
-}
-
-
-// ModelToResp model 转化为 modelResp
-func (${goReceiverName} *${ClassName}Resp) ModelToResp(${className} *model.${ClassName}) error {
-    // go get github.com/jinzhu/copier
-
-    if ${className} == nil {
-        ${className} = &model.${ClassName}{} // copier.Copy 不会自动为其分配空间，所以初始化指针指向的结构体
-    }
-    err := copier.Copy(&${goReceiverName}, &${className})
-    if err != nil {
-        fmt.Printf("ModelToResp Copy error: %v", err)
-        return err
-    }
-    return nil
 }

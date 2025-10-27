@@ -1,0 +1,22 @@
+package controller
+
+import (
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+)
+
+func SuccessResponse(ctx *gin.Context, data interface{}) {
+    ctx.JSON(http.StatusOK, gin.H{
+        "code":    http.StatusOK,
+        "message": "success",
+        "data":    data,
+    })
+}
+
+func ErrorResponse(ctx *gin.Context, code int, message string) {
+    ctx.JSON(http.StatusOK, gin.H{
+        "code":    code,
+        "message": message,
+    })
+}

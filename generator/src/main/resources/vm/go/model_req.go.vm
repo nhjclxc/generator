@@ -10,8 +10,10 @@ import (
 // @author ${author}
 // @date ${datetime}
 type ${ClassName}Req struct {
+#foreach ($column in $columns)
 
-    model.${ClassName}
+    $column.goField $column.goType `json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
+#end
 
     Keyword  string `form:"keyword"` // 模糊搜索字段
 
@@ -20,28 +22,7 @@ type ${ClassName}Req struct {
 
     SatrtTime time.Time `form:"satrtTime" time_format:"2006-01-02 15:04:05"` // 开始时间
     EndTime   time.Time `form:"endTime" time_format:"2006-01-02 15:04:05"`   // 结束时间
+
 }
 
 
-
-// ReqToModel modelReq 转化为 model
-func (${goReceiverName} *${ClassName}Req) ReqToModel() (${className} *model.${ClassName}, err error){
-    // go get github.com/jinzhu/copier
-
-    ${className} = &model.${ClassName}{} // copier.Copy 不会自动为其分配空间，所以初始化指针指向的结构体
-    err = copier.Copy(&${className}, &${goReceiverName})
-    return
-}
-
-
-// ModelToReq model 转化为 modelReq
-func (${goReceiverName} *${ClassName}Req) ModelToReq(${className} *model.${ClassName}) error {
-    // go get github.com/jinzhu/copier
-
-    err := copier.Copy(&${goReceiverName}, &${className})
-    if err != nil {
-    fmt.Printf("ReqTo Copy error: %v", err)
-        return err
-    }
-    return nil
-}

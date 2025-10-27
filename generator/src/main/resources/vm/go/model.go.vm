@@ -2,7 +2,6 @@ package model
 
 import (
     "encoding/json"
-    "errors"
     "fmt"
     "github.com/mitchellh/mapstructure"
     "gorm.io/gorm"
@@ -125,6 +124,22 @@ func (${goReceiverName} *${ClassName}) ${ClassName}ToMap() (map[string]any) {
     }
 
     return m
+}
+
+// ToEntity 将 Model 转换为 Entity
+func (${goReceiverName} *${ClassName}) ToEntity() *entity.${ClassName} {
+    return &entity.Client{
+#foreach ($column in $columns)
+    $column.goField: ${goReceiverName}.$column.goField,
+#end
+    }
+}
+
+// FromEntity 从 Entity 创建 Model
+func (${goReceiverName} *${ClassName}) FromEntity(e *entity.${ClassName}) {
+#foreach ($column in $columns)
+    ${goReceiverName}.$column.goField = $column.goField
+#end
 }
 
 
