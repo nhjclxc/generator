@@ -66,7 +66,9 @@ func (repo *${ClassName}Repository) Update${ClassName}Selective(ctx context.Cont
 
     // repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Updates()：只更新指定字段
     err := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).
-    Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).Updates(${className}).Error
+    Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).
+    Select(#foreach($column in $columns) "$column.columnName", #end).
+    Updates(${className}).Error
     if err != nil {
         return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: %w ", err)
     }
@@ -107,7 +109,7 @@ func (repo *${ClassName}Repository) BatchDelete${ClassName}(ctx context.Context,
     result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Delete(&model.${ClassName}{})
     // result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Model(&model.${ClassName}{}).Where("${pkColumn.columnName} IN ?", ${pkColumn.javaField}List).Update("state", 0)
     if result.Error != nil {
-        return 0, fmt.Errorf("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: %w " + result.Error)
+        return 0, fmt.Errorf("${ClassName}Repository.BatchDelete${ClassName}.Delete, 删除失败: %w ", result.Error)
     }
 
     //// 以下使用的是物理删除
@@ -326,11 +328,10 @@ func (repo *${ClassName}Repository) Find${ClassName}PageList(ctx context.Context
     }
 
     // 分页数据
-    // todo update created_at
     err := query.
         Count(&total).
         Limit(pageSize).Offset((pageNum - 1) * pageSize).
-        Order("created_at desc").
+        Order("${pkColumn.columnName} desc").
         Find(&${className}s).Error
 
     if err != nil {

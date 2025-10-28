@@ -128,7 +128,7 @@ func (${goReceiverName} *${ClassName}) ${ClassName}ToMap() (map[string]any) {
 
 // ToEntity 将 Model 转换为 Entity
 func (${goReceiverName} *${ClassName}) ToEntity() *entity.${ClassName} {
-    return &entity.Client{
+    return &entity.${ClassName}{
 #foreach ($column in $columns)
     $column.goField: ${goReceiverName}.$column.goField,
 #end
@@ -138,7 +138,7 @@ func (${goReceiverName} *${ClassName}) ToEntity() *entity.${ClassName} {
 // FromEntity 从 Entity 创建 Model
 func (${goReceiverName} *${ClassName}) FromEntity(e *entity.${ClassName}) {
 #foreach ($column in $columns)
-    ${goReceiverName}.$column.goField = $column.goField
+    ${goReceiverName}.$column.goField = e.$column.goField
 #end
 }
 

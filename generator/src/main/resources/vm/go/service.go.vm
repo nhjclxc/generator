@@ -46,7 +46,7 @@ func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(ctx context.Co
     }
 
     dbData, err := ${goReceiverName}s.${className}Repository.Select${ClassName}Unique(ctx, ${className})
-    if dbData != nil && dbData.${pkColumn.capJavaField} != dbData.${pkColumn.capJavaField} {
+    if dbData != nil && dbData.${pkColumn.capJavaField} != ${className}.${pkColumn.capJavaField} {
         return 0, fmt.Errorf("xxx已被占用")
     }
     if err != nil {

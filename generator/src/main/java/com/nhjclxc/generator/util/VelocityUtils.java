@@ -241,7 +241,7 @@ public class VelocityUtils
         }
         else if (template.contains("controller_common.go.vm"))
         {
-            fileName = StringUtils.format("{}/controller/{}", goPath, StringUtils.toUnderScoreCase("controller_common.go.vm"));
+            fileName = StringUtils.format("{}/controller/{}", goPath, "controller.go");
         }
         else if (template.contains("router.go.vm"))
         {

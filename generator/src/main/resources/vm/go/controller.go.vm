@@ -69,7 +69,6 @@ func (${goReceiverName}c *${ClassName}Controller) Delete${ClassName}(c *gin.Cont
     ${pkColumn.javaField}ListStr := c.Param("${pkColumn.javaField}List") // 例如: "1,2,3"
     ${pkColumn.javaField}List, err := commonUtils.ParseIds(${pkColumn.javaField}ListStr)
     if err != nil {
-        c.JSON(http.StatusBadRequest, commonUtils.JsonResultError("参数错误：" + err.Error()))
         ErrorResponse(c, http.StatusInternalServerError, "参数错误：" + err.Error())
         return
     }
