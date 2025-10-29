@@ -61,13 +61,16 @@ func (repo *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}
 }
 
 // Update${ClassName}Selective 修改${functionName}不为默认值的字段
-func (repo *${ClassName}Repository) Update${ClassName}Selective(ctx context.Context, ${className} *model.${ClassName}) (int, error) {
+func (repo *${ClassName}Repository) Update${ClassName}Selective(ctx context.Context, updateColumns []string, ${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Update${ClassName}Selective：", slog.Any("${className}", ${className}))
 
+    if len(updateColumns) == 0 {
+        updateColumns = []string{#foreach($column in $columns)#if($column.columnName != ${pkColumn.columnName})"$column.columnName", #end#end}
+    }
     // repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Updates()：只更新指定字段
     err := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).
     Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).
-    Select(#foreach($column in $columns) "$column.columnName", #end).
+    Select(updateColumns).
     Updates(${className}).Error
     if err != nil {
         return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: %w ", err)
@@ -77,10 +80,13 @@ func (repo *${ClassName}Repository) Update${ClassName}Selective(ctx context.Cont
 }
 
 // BatchUpdate${ClassName}Selective 批量修改${functionName}
-func (repo *${ClassName}Repository) BatchUpdate${ClassName}Selective(ctx context.Context, ${className}s []model.${ClassName}) error {
+func (repo *${ClassName}Repository) BatchUpdate${ClassName}Selective(ctx context.Context, updateColumns []string, ${className}s []model.${ClassName}) error {
+    if len(updateColumns) == 0 {
+        updateColumns = []string{#foreach($column in $columns)#if($column.columnName != ${pkColumn.columnName})"$column.columnName", #end#end}
+    }
     return repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Transaction(func(tx *gorm.DB) error {
         for _, v := range ${className}s {
-            err := tx.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} = ?", v.${pkColumn.capJavaField}).Updates(v).Error
+            err := tx.Model(&model.${ClassName}{}).Where("${pkColumn.columnName} = ?", v.${pkColumn.capJavaField}).Select(updateColumns).Updates(v).Error
             if err != nil {
                 return err // 触发回滚
             }
