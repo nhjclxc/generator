@@ -29,12 +29,12 @@ func New${ClassName}Repository(db *gorm.DB) *${ClassName}Repository {
 func (repo *${ClassName}Repository) Insert${ClassName}(ctx context.Context, ${className} *model.${ClassName}) (int, error) {
     slog.Info("${ClassName}Repository.Insert${ClassName}：", slog.Any("${className}", ${className}))
 
-    err := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Create(&${className}).Error
+    result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Create(&${className})
 
-    if err != nil {
-        return 0, fmt.Errorf("${ClassName}Repository.Insert${ClassName}Create, 新增失败: %w ", err)
+    if result.Error != nil {
+        return 0, fmt.Errorf("${ClassName}Repository.Insert${ClassName}Create, 新增失败: %w ", result.Error)
     }
-    return 1, nil
+    return int(result.RowsAffected), nil
 }
 
 // BatchInsert${ClassName}s 批量新增${functionName}
@@ -53,11 +53,11 @@ func (repo *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}
     slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}：", slog.Any("${className}", ${className}))
 
     //保存整个结构体（全字段更新）
-    saveErr := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Save(${className}).Error
-    if saveErr != nil {
-        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: %w ", saveErr)
+    result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Save(${className})
+    if result.Error != nil {
+        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: %w ", result.Error)
     }
-    return 1, nil
+    return int(result.RowsAffected), nil
 }
 
 // Update${ClassName}Selective 修改${functionName}不为默认值的字段
@@ -68,15 +68,15 @@ func (repo *${ClassName}Repository) Update${ClassName}Selective(ctx context.Cont
         updateColumns = []string{#foreach($column in $columns)#if($column.columnName != ${pkColumn.columnName})"$column.columnName", #end#end}
     }
     // repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Updates()：只更新指定字段
-    err := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).
-    Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).
-    Select(updateColumns).
-    Updates(${className}).Error
-    if err != nil {
-        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: %w ", err)
+    result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).
+        Where("${pkColumn.columnName} = ?", ${className}.${pkColumn.capJavaField}).
+        Select(updateColumns).
+        Updates(${className})
+    if result.Error != nil {
+        return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}Selective.Updates, 选择性修改失败: %w ", result.Error)
     }
 
-    return 1, nil
+    return int(result.RowsAffected), nil
 }
 
 // BatchUpdate${ClassName}Selective 批量修改${functionName}
