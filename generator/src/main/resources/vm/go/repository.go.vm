@@ -333,13 +333,14 @@ func (repo *${ClassName}Repository) Find${ClassName}PageList(ctx context.Context
         pageSize = 10
     }
 
-    // 分页数据
-    err := query.
-        Count(&total).
-        Limit(pageSize).Offset((pageNum - 1) * pageSize).
-        Order("${pkColumn.columnName} desc").
-        Find(&${className}s).Error
+    // 先统计总数，Session()创建新会话防止Count()破坏Order()、Preload()、Group()等等
+    err := query.Session(&gorm.Session{}).Count(&total).Error
+    if err != nil {
+        return nil, 0, err
+    }
 
+    // 再进行分页查询
+    err = query.Limit(pageSize).Offset((pageNum - 1) * pageSize).Order("${pkColumn.columnName} desc").Find(&${className}s).Error
     if err != nil {
         return nil, 0, err
     }
