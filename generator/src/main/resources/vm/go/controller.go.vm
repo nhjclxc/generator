@@ -18,154 +18,192 @@ func New${ClassName}Controller(${className}Service *service.${ClassName}Service)
     }
 }
 
-// New${ClassName}Controller2 创建 ${ClassName} ${functionName} 控制器层对象
-func New${ClassName}Controller2(db *gorm.DB) *${ClassName}Controller {
-    return &${ClassName}Controller{
-        ${className}Service: service.New${ClassName}Service2(db),
-    }
-}
-
 // Insert${ClassName} 新增${functionName}
 // @Router /${businessName} [post]
-func (${goReceiverName}c *${ClassName}Controller) Insert${ClassName}(c *gin.Context) {
-    var ${className} model.${ClassName}
-    err :=c.ShouldBindJSON(&${className})
+func (c *${ClassName}Controller) Insert${ClassName}(ctx *gin.Context) {
+    var ${className}Req request.Insert${ClassName}Request
+    err := ctx.ShouldBindJSON(&${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Insert${ClassName}(c.Request.Context(), ${className})
-
+    res, err := c.${className}Service.Insert${ClassName}(ctx.Request.Context(), ${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "新增${functionName}失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "新增${functionName}失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    SuccessResponse(ctx, res)
 }
 
 // Update${ClassName} 修改${functionName}
 // @Router /${businessName} [put]
-func (${goReceiverName}c *${ClassName}Controller) Update${ClassName}(c *gin.Context) {
-    var ${className} model.${ClassName}
-    err :=c.ShouldBindJSON(&${className})
+func (c *${ClassName}Controller) Update${ClassName}(ctx *gin.Context) {
+    var ${className}Req request.Update${ClassName}Request
+    err :=ctx.ShouldBindJSON(&${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Update${ClassName}(c.Request.Context(), ${className})
-
+    res, err := c.${className}Service.Update${ClassName}(ctx.Request.Context(), ${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "修改${functionName}失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "修改${functionName}失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    SuccessResponse(ctx, res)
 }
 
 // Delete${ClassName} 删除${functionName}
 // @Router /${businessName}/:${pkColumn.javaField}List [delete]
-func (${goReceiverName}c *${ClassName}Controller) Delete${ClassName}(c *gin.Context) {
-    ${pkColumn.javaField}ListStr := c.Param("${pkColumn.javaField}List") // 例如: "1,2,3"
-    ${pkColumn.javaField}List, err := commonUtils.ParseIds(${pkColumn.javaField}ListStr)
+func (c *${ClassName}Controller) Delete${ClassName}(ctx *gin.Context) {
+    ${pkColumn.javaField}ListStr := ctx.Param("${pkColumn.javaField}List") // 例如: "1,2,3"
+    ${pkColumn.javaField}List, err := ParseIds(${pkColumn.javaField}ListStr)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "参数错误：" + err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, "参数错误：" + err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Delete${ClassName}(c.Request.Context(), ${pkColumn.javaField}List)
-
+    res, err := c.${className}Service.Delete${ClassName}(ctx.Request.Context(), ${pkColumn.javaField}List)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "删除${functionName}失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "删除${functionName}失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    SuccessResponse(ctx, res)
 }
 
 // Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}详细信息
 // @Router /${businessName}/:${pkColumn.javaField} [get]
-func (${goReceiverName}c *${ClassName}Controller) Get${ClassName}By${pkColumn.capJavaField}(c *gin.Context) {
-    ${pkColumn.javaField}Str := c.Param("${pkColumn.javaField}") // 例如: "1"
-    ${pkColumn.javaField}, err := commonUtils.ParseId(${pkColumn.javaField}Str)
+func (c *${ClassName}Controller) Get${ClassName}By${pkColumn.capJavaField}(ctx *gin.Context) {
+    ${pkColumn.javaField}Str := ctx.Param("${pkColumn.javaField}") // 例如: "1"
+    ${pkColumn.javaField}, err := ParseId(${pkColumn.javaField}Str)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "参数错误：" + err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, "参数错误：" + err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Get${ClassName}By${pkColumn.capJavaField}(c.Request.Context(), ${pkColumn.javaField})
-
+    res, err := c.${className}Service.Get${ClassName}By${pkColumn.capJavaField}(ctx.Request.Context(), ${pkColumn.javaField})
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "查询${functionName}失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "查询${functionName}失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    SuccessResponse(ctx, res)
 }
 
 // Get${ClassName}List 查询${functionName}列表
 // @Router /${businessName}/list [get]
-func (${goReceiverName}c *${ClassName}Controller) Get${ClassName}List(c *gin.Context) {
-    var ${className}Req req.${ClassName}Req
-    err :=c.ShouldBindQuery(&${className}Req)
+func (c *${ClassName}Controller) Get${ClassName}List(ctx *gin.Context) {
+    var ${className}Req request.PageList${ClassName}Request
+    err :=ctx.ShouldBindQuery(&${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Get${ClassName}List(c.Request.Context(), ${className}Req)
-
+    res, err := c.${className}Service.Get${ClassName}List(ctx.Request.Context(), ${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "查询${functionName}列表失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "查询${functionName}列表失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    SuccessResponse(ctx, res)
 }
 
 // Get${ClassName}PageList 分页查询${functionName}列表
 // @Router /${businessName}/pageList [get]
-func (${goReceiverName}c *${ClassName}Controller) Get${ClassName}PageList(c *gin.Context) {
-    var ${className}Req req.${ClassName}Req
-    err :=c.ShouldBindQuery(&${className}Req)
+func (c *${ClassName}Controller) Get${ClassName}PageList(ctx *gin.Context) {
+    var ${className}Req request.PageList${ClassName}Request
+    err :=ctx.ShouldBindQuery(&${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, err.Error())
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Get${ClassName}PageList(c.Request.Context(), ${className}Req)
-
+    res, total, err := c.${className}Service.Get${ClassName}PageList(ctx.Request.Context(), ${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "查询${functionName}分页列表失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "查询${functionName}分页列表失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+	SuccessResponse(ctx, gin.H{
+		"total": total,
+		"list":  res,
+	})
 }
 
 // Export${ClassName} 导出${functionName}列表
 // @Router /${businessName}/export [get]
-func (${goReceiverName}c *${ClassName}Controller) Export${ClassName}(c *gin.Context) {
-    var ${className}Req req.${ClassName}Req
-    err := c.ShouldBindQuery(&${className}Req)
+func (c *${ClassName}Controller) Export${ClassName}(ctx *gin.Context) {
+    var ${className}Req request.PageList${ClassName}Request
+    err := ctx.ShouldBindQuery(&${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, err.Error())
+        ErrorResponse(ctx, http.StatusBadRequest, err.Error())
         return
     }
 
-    excelfile, err := ${goReceiverName}c.${className}Service.Export${ClassName}(c.Request.Context(), ${className}Req)
-
+    excelfile, err := c.${className}Service.Export${ClassName}(ctx.Request.Context(), ${className}Req)
     if err != nil {
-        ErrorResponse(c, http.StatusInternalServerError, "导出${functionName}列表失败：" + err.Error())
+        ErrorResponse(ctx, http.StatusInternalServerError, "导出${functionName}列表失败：" + err.Error())
         return
     }
 
     // 将文件写入响应
-    c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    c.Header("Content-Disposition", `attachment; filename="${functionName}列表.xlsx"`)
-    c.Header("Content-Transfer-Encoding", "binary")
-    c.Header("Cache-Control", "no-cache")
+    ctx.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    ctx.Header("Content-Disposition", `attachment; filename="${functionName}列表.xlsx"`)
+    ctx.Header("Content-Transfer-Encoding", "binary")
+    ctx.Header("Cache-Control", "no-cache")
 
     // 将内容直接写到响应体
-    if err := excelfile.Write(c.Writer); err != nil {
-        c.Status(http.StatusInternalServerError)
+    if err := excelfile.Write(ctx.Writer); err != nil {
+        ErrorResponse(ctx, http.StatusInternalServerError, "数据写入响应失败：" + err.Error())
         return
     }
+
+}
+
+// Import${ClassName} 导入${functionName}列表
+// @Router /${businessName}/export [get]
+func (c *GenTableController) Import${ClassName}(ctx *gin.Context) {
+
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ErrorResponse(ctx, http.StatusBadRequest, "文件上传失败")
+		return
+	}
+
+	// 只允许 xlsx
+	if !strings.HasSuffix(file.Filename, ".xlsx") {
+		ErrorResponse(ctx, http.StatusBadRequest, "仅支持xlsx文件")
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		ErrorResponse(ctx, http.StatusBadRequest, "文件打开失败")
+		return
+	}
+	defer f.Close()
+
+	excel, err := excelize.OpenReader(f)
+	if err != nil {
+		ErrorResponse(ctx, http.StatusBadRequest, "解析Excel失败")
+		return
+	}
+
+    total, successRows, failRows, err := c.${className}Service.Import${ClassName}(ctx.Request.Context(), excel)
+    if err != nil {
+        ErrorResponse(ctx, http.StatusInternalServerError, "导入${functionName}列表失败：" + err.Error())
+        return
+    }
+
+	SuccessResponse(ctx, gin.H{
+		"total":       total,
+		"successRows": successRows,
+		"failRows":    failRows,
+	})
 
 }

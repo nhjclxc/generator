@@ -145,14 +145,13 @@ public class VelocityUtils
         templates.add("vm/java/controller.java.vm");
         templates.add("vm/go/model.go.vm");
         templates.add("vm/go/model_utils.go.vm");
-        templates.add("vm/go/model_req.go.vm");
-        templates.add("vm/go/model_resp.go.vm");
+        templates.add("vm/go/model_request.go.vm");
+        templates.add("vm/go/model_response.go.vm");
         templates.add("vm/go/repository.go.vm");
         templates.add("vm/go/service.go.vm");
         templates.add("vm/go/controller.go.vm");
-        templates.add("vm/go/controller_common.go.vm");
         templates.add("vm/go/router.go.vm");
-        templates.add("vm/go/common_utils.go.vm");
+        templates.add("vm/go/excelutils.go.vm");
         templates.add("vm/go/joinExample/one2One.go.vm");
         templates.add("vm/go/joinExample/one2Many.go.vm");
         templates.add("vm/go/joinExample/many2Many.go.vm");
@@ -218,19 +217,19 @@ public class VelocityUtils
         }
         else if (template.contains("model.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/model/{}", goPath, StringUtils.toUnderScoreCase(className + ".go"));
+            fileName = StringUtils.format("{}/model/{}", goPath, StringUtils.toUnderScoreCase(className + ".go"));
         }
         else if (template.contains("model_utils.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/model/{}", goPath, "model_utils.go");
+            fileName = StringUtils.format("{}/model/{}", goPath, "model_utils.go");
         }
-        else if (template.contains("model_req.go.vm"))
+        else if (template.contains("model_request.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/req/{}", goPath, StringUtils.toUnderScoreCase(className + "_req.go"));
+            fileName = StringUtils.format("{}/request/{}", goPath, StringUtils.toUnderScoreCase(className + "_request.go"));
         }
-        else if (template.contains("model_resp.go.vm"))
+        else if (template.contains("model_response.go.vm"))
         {
-            fileName = StringUtils.format("{}/entity/resp/{}", goPath, StringUtils.toUnderScoreCase(className + "_resp.go"));
+            fileName = StringUtils.format("{}/response/{}", goPath, StringUtils.toUnderScoreCase(className + "_response.go"));
         }
         else if (template.contains("repository.go.vm"))
         {
@@ -244,17 +243,13 @@ public class VelocityUtils
         {
             fileName = StringUtils.format("{}/controller/{}", goPath, StringUtils.toUnderScoreCase(className + "_controller.go"));
         }
-        else if (template.contains("controller_common.go.vm"))
+        else if (template.contains("excelutils.go.vm"))
         {
-            fileName = StringUtils.format("{}/controller/{}", goPath, "controller.go");
+            fileName = StringUtils.format("{}/excelutil/{}", goPath, "excelutil.go");
         }
         else if (template.contains("router.go.vm"))
         {
             fileName = StringUtils.format("{}/router/{}", goPath, StringUtils.toUnderScoreCase(className + "_router.go"));
-        }
-        else if (template.contains("common_utils.go.vm"))
-        {
-            fileName = StringUtils.format("{}/utils/common_utils.go", goPath);
         }
         else if (template.contains("one2One.go.vm"))
         {

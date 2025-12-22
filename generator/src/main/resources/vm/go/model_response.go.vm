@@ -1,0 +1,26 @@
+package response
+
+// ${ClassName}Response ${functionName}对象响应结构体
+// @author ${author}
+// @date ${datetime}
+type ${ClassName}Response struct {
+#foreach ($column in $columns)
+
+    $column.goField $column.goType `json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
+#end
+
+    Foo string `form:"foo"` // foo
+    Bar string `form:"bar"` // bar
+    // ...
+}
+
+// PageList${ClassName}Response 分页查询${functionName}对象响应结构体
+// @author ${author}
+// @date ${datetime}
+type PageList${ClassName}Response struct {
+#foreach ($column in $columns)
+
+    $column.goField $column.goType `json:"$column.javaField" form:"$column.javaField"`// $column.columnComment
+#end
+
+}

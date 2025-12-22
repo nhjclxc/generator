@@ -30,6 +30,7 @@ func (${goReceiverName}r *${ClassName}Router) Init${ClassName}Router(privateRout
         privateRouter.GET("/list", ${goReceiverName}r.${className}Controller.Get${ClassName}List)     // 查询${functionName}列表
         privateRouter.GET("/pageList", ${goReceiverName}r.${className}Controller.Get${ClassName}PageList) // 分页查询${functionName}列表
         privateRouter.GET("/export", ${goReceiverName}r.${className}Controller.Export${ClassName})       // 导出${functionName}列表
+        privateRouter.POST("/import", ${goReceiverName}r.${className}Controller.Import${ClassName})       // 导入${functionName}列表
     }
 
     publicRouter := publicRouterOrigin.Group("/${businessName}")
@@ -44,5 +45,6 @@ func (${goReceiverName}r *${ClassName}Router) Init${ClassName}Router(privateRout
         publicRouter.GET("/list", ${goReceiverName}r.${className}Controller.Get${ClassName}List)     // 查询${functionName}列表
         publicRouter.GET("/pageList", ${goReceiverName}r.${className}Controller.Get${ClassName}PageList) // 分页查询${functionName}列表
         publicRouter.GET("/export", ${goReceiverName}r.${className}Controller.Export${ClassName})       // 导出${functionName}列表
+        privateRouter.POST("/import", ${goReceiverName}r.${className}Controller.Import${ClassName})       // 导入${functionName}列表
     }
 }

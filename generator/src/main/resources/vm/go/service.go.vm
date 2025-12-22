@@ -20,16 +20,13 @@ func New${ClassName}Service(db *gorm.DB, ${className}Repository *repository.${Cl
     }
 }
 
-// New${ClassName}Service2 创建 ${ClassName} ${functionName} 业务层对象
-func New${ClassName}Service2(db *gorm.DB) *${ClassName}Service {
-    return &${ClassName}Service{
-        db: db,
-    }
-}
-
 // Insert${ClassName} 新增${functionName}
-func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(ctx context.Context, ${className} model.${ClassName}) (int, error) {
-    dbData, err := ${goReceiverName}s.${className}Repository.Select${ClassName}Unique(ctx, ${className})
+func (s *${ClassName}Service) Insert${ClassName}(ctx context.Context, ${className}Req request.Insert${ClassName}Request) (int, error) {
+
+    var ${className} model.${ClassName}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+
+    dbData, err := s.${className}Repository.Select${ClassName}Unique(ctx, ${className})
     if dbData != nil {
         return 0, fmt.Errorf("xxx已被占用")
     }
@@ -37,16 +34,19 @@ func (${goReceiverName}s *${ClassName}Service) Insert${ClassName}(ctx context.Co
         return 0, err
     }
 
-    return ${goReceiverName}s.${className}Repository.Insert${ClassName}(ctx, &${className})
+    return s.${className}Repository.Insert${ClassName}(ctx, &${className})
 }
 
 // Update${ClassName} 修改${functionName}
-func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(ctx context.Context, ${className} model.${ClassName}) (int, error) {
-    if ${className}.${pkColumn.capJavaField} == 0 {
+func (s *${ClassName}Service) Update${ClassName}(ctx context.Context, ${className}Req request.Update${ClassName}Request) (int, error) {
+    if ${className}Req.${pkColumn.capJavaField} == 0 {
         return 0, fmt.Errorf("${ClassName}Service.Update${ClassName} ${pkColumn.capJavaField} 不能为空！！！: ")
     }
 
-    dbData, err := ${goReceiverName}s.${className}Repository.Select${ClassName}Unique(ctx, ${className})
+    var ${className} model.${ClassName}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+
+    dbData, err := s.${className}Repository.Select${ClassName}Unique(ctx, ${className})
     if dbData != nil && dbData.${pkColumn.capJavaField} != ${className}.${pkColumn.capJavaField} {
         return 0, fmt.Errorf("xxx已被占用")
     }
@@ -54,19 +54,19 @@ func (${goReceiverName}s *${ClassName}Service) Update${ClassName}(ctx context.Co
         return 0, err
     }
 
-    return ${goReceiverName}s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(ctx, &${className})
+    return s.${className}Repository.Update${ClassName}By${pkColumn.capJavaField}(ctx, &${className})
 }
 
 // Delete${ClassName} 删除${functionName}
-func (${goReceiverName}s *${ClassName}Service) Delete${ClassName}(ctx context.Context, ${pkColumn.javaField}List []int64) (int, error) {
+func (s *${ClassName}Service) Delete${ClassName}(ctx context.Context, ${pkColumn.javaField}List []int64) (int, error) {
 
-    return ${goReceiverName}s.${className}Repository.BatchDelete${ClassName}(ctx, ${pkColumn.javaField}List)
+    return s.${className}Repository.BatchDelete${ClassName}(ctx, ${pkColumn.javaField}List)
 }
 
 // Get${ClassName}By${pkColumn.capJavaField} 获取${functionName}业务详细信息
-func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(ctx context.Context, ${pkColumn.javaField} int64) (*model.${ClassName}, error) {
+func (s *${ClassName}Service) Get${ClassName}By${pkColumn.capJavaField}(ctx context.Context, ${pkColumn.javaField} int64) (*model.${ClassName}, error) {
 
-    ${className}, err := ${goReceiverName}s.${className}Repository.Find${ClassName}By${pkColumn.capJavaField}(ctx, ${pkColumn.javaField})
+    ${className}, err := s.${className}Repository.Find${ClassName}By${pkColumn.capJavaField}(ctx, ${pkColumn.javaField})
     if err != nil {
         return nil, err
     }
@@ -74,39 +74,94 @@ func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJa
     return ${className}, nil
 }
 
-// Get${ClassName}List 查询${functionName}业务列表
-func (${goReceiverName}s *${ClassName}Service) Get${ClassName}List(ctx context.Context, ${className}Req req.${ClassName}Req) (res any, err error) {
+// Get${ClassName}List 查询${functionName}列表
+func (s *${ClassName}Service) Get${ClassName}List(ctx context.Context, ${className}Req request.PageList${ClassName}Request) ([]*response.PageList${ClassName}Response, error) {
 
-    var ${className} model.${className}
+    var ${className} model.${ClassName}
     _ = model.CopyAttribute(&${className}, ${className}Req)
-    ${className}List, err := ${goReceiverName}s.${className}Repository.Find${ClassName}List(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime)
+
+    ${className}List, err := s.${className}Repository.Find${ClassName}List(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime)
     if err != nil {
         return nil, err
     }
 
-    return ${className}List, nil
+    var restList []*response.PageList${ClassName}Response
+    for _, ${className} := range ${className}List {
+        var ${className}Resp response.PageList${ClassName}Response
+        _ = model.CopyAttribute(&${className}Resp, ${className})
+        restList = append(restList, &${className}Resp)
+    }
+
+    return restList, nil
 }
 
-// Get${ClassName}PageList 分页查询${functionName}业务列表
-func (${goReceiverName}s *${ClassName}Service) Get${ClassName}PageList(ctx context.Context, ${className}Req req.${ClassName}Req) (res any, err error) {
+// Get${ClassName}PageList 分页查询${functionName}列表
+func (s *${ClassName}Service) Get${ClassName}PageList(ctx context.Context, ${className}Req request.PageList${ClassName}Request) ([]*response.PageList${ClassName}Response, int64, error)  {
 
-    var ${className} model.${className}
+    var ${className} model.${ClassName}
     _ = model.CopyAttribute(&${className}, ${className}Req)
-    ${className}List, total, err := ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, ${className}Req.PageNum, ${className}Req.PageSize)
+
+    ${className}List, total, err := s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, ${className}Req.PageNum, ${className}Req.PageSize)
+    if err != nil {
+        return nil, 0, err
+    }
+
+    var restList []*response.PageList${ClassName}Response
+    for _, ${className} := range ${className}List {
+        var ${className}Resp response.PageList${ClassName}Response
+        _ = model.CopyAttribute(&${className}Resp, ${className})
+        restList = append(restList, &${className}Resp)
+    }
+
+    return restList, total, nil
+}
+
+// Export${ClassName} 导出${functionName}列表
+func (s *${ClassName}Service) Export${ClassName}(ctx context.Context, ${className}Req request.PageList${ClassName}Request) (*excelize.File, error) {
+
+    var ${className} model.${ClassName}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+    ${className}List, _, err := s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, 1, math.MaxInt)
     if err != nil {
         return nil, err
     }
-
-    return commonUtils.BuildPageData[model.${ClassName}](${className}List, total, ${className}Req.PageNum, ${className}Req.PageSize), nil
-}
-
-// Export${ClassName} 导出${functionName}业务列表
-func (${goReceiverName}s *${ClassName}Service) Export${ClassName}(ctx context.Context, ${className}Req req.${ClassName}Req) (*excelize.File, error) {
-
-    var ${className} model.${className}
-    _ = model.CopyAttribute(&${className}, ${className}Req)
-    ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, 1, math.MaxInt)
     // 实现导出 ...
 
-    return nil, nil
+    var restList []*response.PageList${ClassName}Response
+    for _, ${className} := range ${className}List {
+        var ${className}Resp response.PageList${ClassName}Response
+        _ = model.CopyAttribute(&${className}Resp, ${className})
+        restList = append(restList, &${className}Resp)
+    }
+
+    headerKeys := []string{#foreach($column in $columns)#if($column.goField != ${pkColumn.goField})"$column.goField", #end#end}
+    headerValues := []string{#foreach($column in $columns)#if($column.columnComment != ${pkColumn.columnComment})"$column.columnComment", #end#end}
+
+    excelfile := excelutils.ExportExcel[*response.PageList${ClassName}Response](restList, 0, 1, headerKeys, headerValues)
+
+    return excelfile, nil
+}
+
+// Import${ClassName} 导入${functionName}列表
+func (s *${ClassName}Service) Import${ClassName}(ctx context.Context, excelFile *excelize.File) (int, int, int, error) {
+
+    headerKeys := []string{#foreach($column in $columns)#if($column.goField != ${pkColumn.goField})"$column.goField", #end#end}
+	importDataList, err := excelutils.ImportExcel[*request.Insert${ClassName}Request](excelFile, 0, 1, headerKeys)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+    var saveDataList []*model.${ClassName}
+    for _, ${className}Req := range importDataList {
+        var ${className} model.${ClassName}
+        _ = model.CopyAttribute(&${className}, ${className}Req)
+        saveDataList = append(saveDataList, &${className})
+    }
+
+	saveNum, err :=  s.${className}Repository.BatchInsert${ClassName}s(ctx, saveDataList)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	return len(saveDataList), saveNum, len(saveDataList) - saveNum, nil
 }

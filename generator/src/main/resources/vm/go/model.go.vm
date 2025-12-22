@@ -1,9 +1,6 @@
 package model
 
 import (
-    "encoding/json"
-    "fmt"
-    "github.com/mitchellh/mapstructure"
     "gorm.io/gorm"
     "time"
 )
@@ -48,7 +45,7 @@ func (${goReceiverName} *${ClassName}) CreateTable(tx *gorm.DB) error {
     tableName := ${goReceiverName}.TableName()
     if !tx.Migrator().HasTable(tableName) {
         return tx.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='${functionName}'").
-                Table(tableName).Migrator().CreateTable(&${ClassName}{})
+			Table(tableName).Migrator().CreateTable(&${ClassName}{})
     }
     return nil
 }
@@ -68,91 +65,4 @@ func (${goReceiverName} *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
 func (${goReceiverName} *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
     ${goReceiverName}.UpdatedAt = time.Now()
     return
-}
-
-// MapTo${ClassName} map映射转化为当前结构体
-func MapTo${ClassName}(inputMap map[string]any) (*${ClassName}) {
-    //go get github.com/mitchellh/mapstructure
-
-    var ${className} ${ClassName}
-    decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-        DecodeHook: mapstructure.ComposeDecodeHookFunc(
-            func(from reflect.Type, to reflect.Type, data interface{}) (interface{}, error) {
-                if from.Kind() == reflect.String && to == reflect.TypeOf(time.Time{}) {
-                    return time.Parse("2006-01-02 15:04:05", data.(string))
-                }
-                return data, nil
-            },
-        ),
-        Result: &${className},
-    })
-    if err != nil {
-        fmt.Printf("MapToStruct Decode NewDecoder error: %v", err)
-        panic(err)
-    }
-
-    if err := decoder.Decode(inputMap); err != nil {
-        fmt.Printf("MapToStruct Decode error: %v", err)
-    }
-    return &${className}
-}
-
-// ${ClassName}ToMap 当前结构体转化为map映射
-func (${goReceiverName} *${ClassName}) ${ClassName}ToMap() (map[string]any) {
-    // 先转成 map
-    m := make(map[string]any)
-    bytes, err := json.Marshal(${goReceiverName})
-    if err != nil {
-        fmt.Printf("StructToMap marshal error: %v", err)
-        return nil
-    }
-
-    err = json.Unmarshal(bytes, &m)
-    if err != nil {
-        fmt.Printf("StructToMap unmarshal error: %v", err)
-        return nil
-    }
-
-    // 格式化所有 time.Time
-    for k, v := range m {
-        if t, ok := v.(string); ok && len(t) > 10 && strings.Contains(t, "T") {
-            // 尝试解析 RFC3339，再格式化
-            if parsed, err := time.Parse(time.RFC3339, t); err == nil {
-                m[k] = parsed.Format("2006-01-02 15:04:05")
-            }
-        }
-    }
-
-    return m
-}
-
-// ToEntity 将 Model 转换为 Entity
-func (${goReceiverName} *${ClassName}) ToEntity() *entity.${ClassName} {
-    return &entity.${ClassName}{
-#foreach ($column in $columns)
-    $column.goField: ${goReceiverName}.$column.goField,
-#end
-    }
-}
-
-// FromEntity 从 Entity 创建 Model
-func (${goReceiverName} *${ClassName}) FromEntity(e *entity.${ClassName}) {
-#foreach ($column in $columns)
-    ${goReceiverName}.$column.goField = e.$column.goField
-#end
-}
-
-
-// 东八区
-var cstZone = func() *time.Location {
-    loc, err := time.LoadLocation("Asia/Shanghai")
-    if err != nil {
-        return time.FixedZone("CST", 8*3600)
-    }
-    return loc
-}()
-
-// 获取东八区时间
-func getNow() time.Time {
-    return time.Now().In(cstZone)
 }
