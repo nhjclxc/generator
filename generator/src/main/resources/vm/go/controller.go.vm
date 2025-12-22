@@ -149,11 +149,23 @@ func (${goReceiverName}c *${ClassName}Controller) Export${ClassName}(c *gin.Cont
         return
     }
 
-    res, err := ${goReceiverName}c.${className}Service.Export${ClassName}(c.Request.Context(), ${className}Req)
+    excelfile, err := ${goReceiverName}c.${className}Service.Export${ClassName}(c.Request.Context(), ${className}Req)
 
     if err != nil {
         ErrorResponse(c, http.StatusInternalServerError, "导出${functionName}列表失败：" + err.Error())
         return
     }
-    SuccessResponse(c, res)
+
+    // 将文件写入响应
+    c.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    c.Header("Content-Disposition", `attachment; filename="${functionName}列表.xlsx"`)
+    c.Header("Content-Transfer-Encoding", "binary")
+    c.Header("Cache-Control", "no-cache")
+
+    // 将内容直接写到响应体
+    if err := excelfile.Write(c.Writer); err != nil {
+        c.Status(http.StatusInternalServerError)
+        return
+    }
+
 }

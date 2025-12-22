@@ -3,6 +3,7 @@ package service
 import (
     "context"
     "log/slog"
+    "math"
 )
 
 // ${ClassName}Service ${functionName} Service 层
@@ -76,8 +77,9 @@ func (${goReceiverName}s *${ClassName}Service) Get${ClassName}By${pkColumn.capJa
 // Get${ClassName}List 查询${functionName}业务列表
 func (${goReceiverName}s *${ClassName}Service) Get${ClassName}List(ctx context.Context, ${className}Req req.${ClassName}Req) (res any, err error) {
 
-    ${className}, err := ${className}Req.ReqToModel()
-    ${className}List, err := ${goReceiverName}s.${className}Repository.Find${ClassName}List(ctx, *${className}, ${className}Req.SatrtTime, ${className}Req.EndTime)
+    var ${className} model.${className}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+    ${className}List, err := ${goReceiverName}s.${className}Repository.Find${ClassName}List(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime)
     if err != nil {
         return nil, err
     }
@@ -88,8 +90,9 @@ func (${goReceiverName}s *${ClassName}Service) Get${ClassName}List(ctx context.C
 // Get${ClassName}PageList 分页查询${functionName}业务列表
 func (${goReceiverName}s *${ClassName}Service) Get${ClassName}PageList(ctx context.Context, ${className}Req req.${ClassName}Req) (res any, err error) {
 
-    ${className}, err := ${className}Req.ReqToModel()
-    ${className}List, total, err := ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, *${className}, ${className}Req.SatrtTime, ${className}Req.EndTime, ${className}Req.PageNum, ${className}Req.PageSize)
+    var ${className} model.${className}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+    ${className}List, total, err := ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, ${className}Req.PageNum, ${className}Req.PageSize)
     if err != nil {
         return nil, err
     }
@@ -98,10 +101,11 @@ func (${goReceiverName}s *${ClassName}Service) Get${ClassName}PageList(ctx conte
 }
 
 // Export${ClassName} 导出${functionName}业务列表
-func (${goReceiverName}s *${ClassName}Service) Export${ClassName}(ctx context.Context, ${className}Req req.${ClassName}Req) (res any, err error) {
+func (${goReceiverName}s *${ClassName}Service) Export${ClassName}(ctx context.Context, ${className}Req req.${ClassName}Req) (*excelize.File, error) {
 
-    ${className}, err := ${className}Req.ReqToModel()
-    ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, *${className}, ${className}Req.SatrtTime, ${className}Req.EndTime, 1, 10000)
+    var ${className} model.${className}
+    _ = model.CopyAttribute(&${className}, ${className}Req)
+    ${goReceiverName}s.${className}Repository.Find${ClassName}PageList(ctx, &${className}, ${className}Req.StartTime, ${className}Req.EndTime, 1, math.MaxInt)
     // 实现导出 ...
 
     return nil, nil

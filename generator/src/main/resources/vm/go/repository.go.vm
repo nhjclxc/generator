@@ -53,7 +53,7 @@ func (repo *${ClassName}Repository) Update${ClassName}By${pkColumn.capJavaField}
     slog.Info("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}：", slog.Any("${className}", ${className}))
 
     //保存整个结构体（全字段更新）
-    result := repo.db.WithContext(ctx).Model(&model.${ClassName}{}).Save(${className})
+    result := repo.db.WithContext(ctx).Save(${className})
     if result.Error != nil {
         return 0, fmt.Errorf("${ClassName}Repository.Update${ClassName}By${pkColumn.capJavaField}.Save, 修改失败: %w ", result.Error)
     }
@@ -208,7 +208,7 @@ func (repo *${ClassName}Repository) Select${ClassName}Unique(ctx context.Context
 }
 
 // Find${ClassName}List 查询${functionName}列表
-func (repo *${ClassName}Repository) Find${ClassName}List(ctx context.Context, ${className} model.${ClassName}, startTime time.Time, endTime time.Time) ([]*model.${ClassName}, error) {
+func (repo *${ClassName}Repository) Find${ClassName}List(ctx context.Context, ${className} *model.${ClassName}, startTime time.Time, endTime time.Time) ([]*model.${ClassName}, error) {
     slog.Info("${ClassName}Repository.Find${ClassName}List：", slog.Any("${className}", ${className}))
 
     var ${className}s []*model.${ClassName}

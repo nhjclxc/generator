@@ -20,7 +20,7 @@ type ${ClassName}Req struct {
     PageNum  int    `form:"pageNum"` // 页码
     PageSize int    `form:"pageSize"` // 页大小
 
-    SatrtTime time.Time `form:"satrtTime" time_format:"2006-01-02 15:04:05"` // 开始时间
+    StartTime time.Time `form:"startTime" time_format:"2006-01-02 15:04:05"` // 开始时间
     EndTime   time.Time `form:"endTime" time_format:"2006-01-02 15:04:05"`   // 结束时间
 
 }
