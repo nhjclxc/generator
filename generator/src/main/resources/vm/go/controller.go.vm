@@ -151,9 +151,10 @@ func (c *${ClassName}Controller) Export${ClassName}(ctx *gin.Context) {
         return
     }
 
+    encoded := url.QueryEscape("第三方直播任务历史列表.xlsx")
     // 将文件写入响应
     ctx.Header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    ctx.Header("Content-Disposition", `attachment; filename="${functionName}列表.xlsx"`)
+    ctx.Header("Content-Disposition", `attachment; filename="`+encoded+`"; filename*=UTF-8''`+encoded)
     ctx.Header("Content-Transfer-Encoding", "binary")
     ctx.Header("Cache-Control", "no-cache")
 
