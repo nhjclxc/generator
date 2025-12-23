@@ -167,7 +167,7 @@ func (c *${ClassName}Controller) Export${ClassName}(ctx *gin.Context) {
 
 // Import${ClassName} 导入${functionName}列表
 // @Router /${businessName}/export [get]
-func (c *GenTableController) Import${ClassName}(ctx *gin.Context) {
+func (c *${ClassName}Controller) Import${ClassName}(ctx *gin.Context) {
 
 	file, err := ctx.FormFile("file")
 	if err != nil {
