@@ -75,7 +75,7 @@ func ImportExcelFile[T any](filename string, firstColAxis int32, firstRowAxis in
 	//Go 中，每个函数的 [T any] 都是自己独立定义的类型变量，即使名字相同，编译器也认为它们是不同的类型：
 
 	// 显式传递泛型参数
-	return doImportExcel[T](f, firstColAxis, firstRowAxis, headerKeys)
+	return ImportExcel[T](f, firstColAxis, firstRowAxis, headerKeys)
 }
 
 // ImportExcelByte 导入接口里面的数据 multipart.File
@@ -87,11 +87,11 @@ func ImportExcelByMultiFile[T any](file multipart.File, firstColAxis int32, firs
 	defer f.Close()
 
 	// 显式传递泛型参数
-	return doImportExcel[T](f, firstColAxis, firstRowAxis, headerKeys)
+	return ImportExcel[T](f, firstColAxis, firstRowAxis, headerKeys)
 }
 
 // 执行导入
-func doImportExcel[T any](f *excelize.File, firstColAxis int32, firstRowAxis int, headerKeys []string) ([]*T, error) {
+func ImportExcel[T any](f *excelize.File, firstColAxis int32, firstRowAxis int, headerKeys []string) ([]*T, error) {
 
 	// 2. 获取默认工作表名称（如 Sheet1）
 	sheetName := f.GetSheetName(f.GetActiveSheetIndex())
