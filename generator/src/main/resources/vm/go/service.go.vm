@@ -146,7 +146,7 @@ func (s *${ClassName}Service) Export${ClassName}(ctx context.Context, ${classNam
 func (s *${ClassName}Service) Import${ClassName}(ctx context.Context, excelFile *excelize.File) (int, int, int, error) {
 
     headerKeys := []string{#foreach($column in $columns)#if($column.goField != ${pkColumn.goField})"$column.goField", #end#end}
-	importDataList, err := excelutils.ImportExcel[*request.Insert${ClassName}Request](excelFile, 0, 1, headerKeys)
+	importDataList, err := excelutils.ImportExcel[request.Insert${ClassName}Request](excelFile, 0, 1, headerKeys)
 	if err != nil {
 		return 0, 0, 0, err
 	}
