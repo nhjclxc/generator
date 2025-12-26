@@ -145,6 +145,7 @@ public class VelocityUtils
         templates.add("vm/java/controller.java.vm");
         templates.add("vm/go/model.go.vm");
         templates.add("vm/go/model_utils.go.vm");
+        templates.add("vm/go/copier.go.vm");
         templates.add("vm/go/model_request.go.vm");
         templates.add("vm/go/model_response.go.vm");
         templates.add("vm/go/repository.go.vm");
@@ -223,6 +224,10 @@ public class VelocityUtils
         else if (template.contains("model_utils.go.vm"))
         {
             fileName = StringUtils.format("{}/model/{}", goPath, "model_utils.go");
+        }
+        else if (template.contains("copier.go.vm"))
+        {
+            fileName = StringUtils.format("{}/copier/{}", goPath, "copier.go");
         }
         else if (template.contains("model_request.go.vm"))
         {
