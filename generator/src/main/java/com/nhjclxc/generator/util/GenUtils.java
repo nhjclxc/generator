@@ -173,11 +173,9 @@ public class GenUtils
             case "smallint":
                 return isUnsigned ? "uint16" : "int16";
 
-            case "mediumint":
-                return isUnsigned ? "uint32" : "int32";
-
             case "int":
             case "integer":
+            case "mediumint":
                 return isUnsigned ? "uint32" : "int32";
 
             case "bigint":
