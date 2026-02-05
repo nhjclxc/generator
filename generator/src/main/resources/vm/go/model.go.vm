@@ -16,15 +16,15 @@ type ${ClassName} struct {
 
     // todo update The following predefined fields
 
-    Version uint `gorm:"column:version;default:1" json:"version"` // 乐观锁（版本控制）
+    Version uint `gorm:"column:version;type:bigint;default:1" json:"version"` // 乐观锁（版本控制）
 
-    Remark string `gorm:"column:remark;" description:"备注"` // 备注
+    Remark string `gorm:"column:remark;type:varchar(256)" json:"remark"` // 备注
 
-    CreatedAt time.Time `gorm:"column:created_at;type:datetime" json:"createdAt"` // 创建时间
+    CreatedAt time.Time `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"createdAt"` // 创建时间
 
     CreatedBy uint64 `gorm:"column:created_by;type:bigint" json:"createdBy"` // 创建人id
 
-    UpdatedAt time.Time `gorm:"column:updated_at;type:datetime" json:"updatedAt"` // 更新时间
+    UpdatedAt time.Time `gorm:"column:updated_at;type:datetime;default:CURRENT_TIMESTAMP;autoUpdateTime" json:"updatedAt"` // 更新时间
 
     UpdatedBy uint64 `gorm:"column:updated_by;type:bigint" json:"updatedBy"` // 更新人id
 
@@ -36,33 +36,38 @@ type ${ClassName} struct {
 }
 
 // TableName 返回当前实体类的表名
-func (${goReceiverName} *${ClassName}) TableName() string {
+func (m *${ClassName}) TableName() string {
     return "${tableName}"
 }
 
 // CreateTable 根据结构体里面的gorm信息创建表结构
-func (${goReceiverName} *${ClassName}) CreateTable(tx *gorm.DB) error {
-    tableName := ${goReceiverName}.TableName()
-    if !tx.Migrator().HasTable(tableName) {
-        return tx.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='${functionName}'").
-			Table(tableName).Migrator().CreateTable(&${ClassName}{})
-    }
-    return nil
+func (m *${ClassName}) CreateTable(tx *gorm.DB) error {
+    tableName := m.TableName()
+//    if !tx.Migrator().HasTable(tableName) {
+//        // CreateTable 会强制创建表，只有第一次有用，如果表存在则抛出：Table 'xxx' already exists
+//        return tx.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='${functionName}'").
+//			Table(tableName).Migrator().CreateTable(&${ClassName}{})
+//    }
+//    return nil
+
+    // AutoMigrate 会尽量将数据库的表结构与当前的结构体对齐，表存在则修改，不存在则创建
+    return tx.Set("gorm:table_options", "ENGINE=InnoDB CHARSET=utf8mb4 COMMENT='${functionName}'").
+        Table(tableName).AutoMigrate(&Menu{})
 }
 
 // 可用钩子函数包括：BeforeCreate / AfterCreate、BeforeUpdate / AfterUpdate、BeforeDelete / AfterDelete
 // BeforeCreate 在插入数据之前执行的操作
-func (${goReceiverName} *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
-    if err = ${goReceiverName}.CreateTable(tx); err != nil {
-        return err
-    }
+func (m *${ClassName}) BeforeCreate(tx *gorm.DB) (err error) {
+//    if err = m.CreateTable(tx); err != nil {
+//        return err
+//    }
 
-    ${goReceiverName}.CreatedAt = time.Now()
-    ${goReceiverName}.UpdatedAt = time.Now()
+    m.CreatedAt = time.Now()
+    m.UpdatedAt = time.Now()
     return
 }
 
-func (${goReceiverName} *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
-    ${goReceiverName}.UpdatedAt = time.Now()
+func (m *${ClassName}) BeforeUpdate(tx *gorm.DB) (err error) {
+    m.UpdatedAt = time.Now()
     return
 }
